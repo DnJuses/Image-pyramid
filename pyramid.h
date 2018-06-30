@@ -12,6 +12,7 @@
 #include <QPalette>
 #include <QHBoxLayout>
 #include <QVector>
+#include "pyramidpixmap.h"
 
 class pyramid : public QMainWindow
 {
@@ -20,7 +21,7 @@ public:
     explicit pyramid(QWidget *parent = nullptr);
 
 private:
-    QVector<QPixmap*> openedImages;
+    QVector<PyramidPixmap*> openedImages;
     QWidget *centralWidget;                 QWidget* createCentral();
     QVBoxLayout *centralLayout;             QVBoxLayout* createCLayout();
     QWidget *imageWdg; QPalette *img;       QWidget* createImage();
@@ -33,9 +34,14 @@ private:
                                             void createMenu();
                                             void createAll();
 
-    void setSizeTip(QSize imageSize);
+
+
+    void setSizeTip(QString imageSize);
+    bool isDuplicate(QString checkPath);
+    void sortAndRefill();
 private slots:
     bool openImage();
+    void updateStats(int id);
 };
 
 #endif // PYRAMID_H

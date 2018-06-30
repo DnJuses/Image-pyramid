@@ -3,6 +3,7 @@
 #include <QMenuBar>
 #include <QMenu>
 #include <QPalette>
+#include <QDebug>
 #include <QMessageBox>
 #include <QScrollArea>
 
@@ -49,6 +50,7 @@ QScrollArea *pyramid::createScroll()
 QComboBox *pyramid::createFilesBox()
 {
     files = new QComboBox(centralWidget);
+    connect(files, SIGNAL(currentIndexChanged(int)), this, SLOT(updateStats(int)));
     return files;
 }
 
@@ -99,14 +101,65 @@ void pyramid::createAll()
     this->setCentralWidget(createCentral());
 }
 
-void pyramid::setSizeTip(QSize imageSize)
+void pyramid::setSizeTip(QString imageSize)
 {
-    sizeTip->setText("Size: " + QString::number(imageSize.width()) + "x" + QString::number(imageSize.height()));
+    sizeTip->setText("Size: " + imageSize);
+}
+
+bool pyramid::isDuplicate(QString checkPath)
+{
+    for(int i = 0; i < openedImages.size(); i++)
+    {
+        if(checkPath == openedImages[i]->getPath())
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void pyramid::sortAndRefill()
+{
+    int lastId = openedImages.size() - 1;
+    // Сортировка вставками по параметру диагонали изображения
+    for (int i = 1; i < openedImages.size(); i++)
+    {
+        int j = i;
+        while (j > 0)
+        {
+            if(openedImages[j - 1]->getDiag() > openedImages[j]->getDiag())
+            {
+                if(lastId == j) lastId--;
+                PyramidPixmap *temp = openedImages[j];
+                openedImages[j] = openedImages[j - 1];
+                openedImages[j - 1] = temp;
+                j--;
+            }
+            else break;
+        }
+    }
+    files->blockSignals(true);
+    files->clear(); // Дважды посылает сигнал, из-за чего слот updateStats получает невалидные значения и программа крашится
+    files->blockSignals(false);
+    // Очистка и перезаполнение бокса
+    for (int i = 0; i < openedImages.size(); i++)
+    {
+        int pos = openedImages[i]->getPath().lastIndexOf("/");
+        if(pos != -1)
+        {
+            files->addItem(openedImages[i]->getPath().remove(0, pos + 1) + "   " + openedImages[i]->getImgSizeTip());
+        }
+        else
+        {
+            files->addItem(openedImages[i]->getPath() + "   " + openedImages[i]->getImgSizeTip());
+        }
+    }
+    files->setCurrentIndex(lastId);
 }
 
 bool pyramid::openImage()
 {
-    const QString openFilePath = QFileDialog::getOpenFileName(nullptr, nullptr, nullptr, tr("Any files (*.*);;Image files (*.jpg *.png)"));
+    QString openFilePath = QFileDialog::getOpenFileName(nullptr, nullptr, nullptr, tr("Any files (*.*);;Image files (*.jpg *.png)"));
     if(openFilePath == "") return true; // Пользователь закрыл файловый диалог и не выбрал файл.
     // Проверка на соответствие формата файла.
     if(!openFilePath.endsWith(".jpg") && !openFilePath.endsWith(".png"))
@@ -118,15 +171,29 @@ bool pyramid::openImage()
         cantOpen.exec();
         return false;
     }
-    QPixmap *newImage = new QPixmap();
-    if(newImage->load(openFilePath))
+    if(isDuplicate(openFilePath))
     {
-        this->setSizeTip(newImage->size());
-        img->setBrush(imageWdg->backgroundRole(), QBrush(*newImage));
+        QMessageBox::StandardButton conf;
+        conf = QMessageBox::question(0,
+                                     "File opening",
+                                     "This file is already opened! Open anyways?",
+                                     QMessageBox::Yes | QMessageBox::No,
+                                     QMessageBox::No);
+                if(conf == QMessageBox::No)
+                {
+                    return true;
+                }
+    }
+    PyramidPixmap *newImage = new PyramidPixmap(openFilePath);
+    if(newImage->isLoaded())
+    {
         openedImages.push_back(newImage);
-        imageWdg->resize(newImage->size());
-        imageWdg->setPalette(*img);
+        this->sortAndRefill();
         return true;
+    }
+    else
+    {
+        delete newImage;
     }
     QMessageBox cantOpen;
     cantOpen.setWindowTitle("File opening");
@@ -134,4 +201,14 @@ bool pyramid::openImage()
     cantOpen.setIcon(QMessageBox::Critical);
     cantOpen.exec();
     return false;
+}
+
+void pyramid::updateStats(int id)
+{
+
+    qDebug() << "Second - " << id;
+    this->setSizeTip(openedImages[id]->getImgSizeTip());
+    img->setBrush(imageWdg->backgroundRole(), QBrush(openedImages[id]->getImage()));
+    imageWdg->resize(openedImages[id]->getImgSize());
+    imageWdg->setPalette(*img);
 }
