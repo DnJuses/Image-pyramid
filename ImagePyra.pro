@@ -25,7 +25,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-    pyramid.cpp
+    pyramid.cpp \
+    pyramidpixmap.cpp
 
 HEADERS += \
-    pyramid.h
+    pyramid.h \
+    pyramidpixmap.h
