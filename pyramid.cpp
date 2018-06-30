@@ -205,8 +205,6 @@ bool pyramid::openImage()
 
 void pyramid::updateStats(int id)
 {
-
-    qDebug() << "Second - " << id;
     this->setSizeTip(openedImages[id]->getImgSizeTip());
     img->setBrush(imageWdg->backgroundRole(), QBrush(openedImages[id]->getImage()));
     imageWdg->resize(openedImages[id]->getImgSize());
