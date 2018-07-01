@@ -201,6 +201,7 @@ bool pyramid::startLayersCreation()
     }
     if(openedImages[filesBox->currentIndex()]->createLayers(layersAmount->value(), multiplier->value()))
     {
+
         QMessageBox createSuccess;
         createSuccess.setWindowTitle("Layer creation");
         createSuccess.setText(QString::number(layersAmount->value()) + " layers created succesfully!");
@@ -261,7 +262,7 @@ bool pyramid::openImage()
 void pyramid::updateStats(int id)
 {
     this->setSizeTip(openedImages[id]->getImgSizeTip());
-    img->setBrush(imageWdg->backgroundRole(), QBrush(openedImages[id]->getImage(0)));
+    img->setBrush(imageWdg->backgroundRole(), QBrush(*(openedImages[id]->getImage(0))));
     imageWdg->resize(openedImages[id]->getImgSize());
     imageWdg->setPalette(*img);
     // Метод очистки комбобокса дважды посылает сигнал, из-за чего слот updateLayers получает невалидные значения и программа крашится
@@ -277,6 +278,13 @@ void pyramid::updateStats(int id)
 
 void pyramid::updateLayers(int id)
 {
-    img->setBrush(imageWdg->backgroundRole(), QBrush(openedImages[filesBox->currentIndex()]->getImage(id)));
+    static QPixmap *generatedImage;
+    if(generatedImage != nullptr) delete generatedImage;
+    generatedImage = new QPixmap(*(openedImages[filesBox->currentIndex()]->getImage(0)));
+    QSize multipliedSize = openedImages[filesBox->currentIndex()]->getLayerSize(id);
+    QSize originalSize = openedImages[filesBox->currentIndex()]->getLayerSize(0);
+    *generatedImage = generatedImage->scaled(multipliedSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    *generatedImage = generatedImage->scaled(originalSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    img->setBrush(imageWdg->backgroundRole(), QBrush(*generatedImage));
     imageWdg->setPalette(*img);
 }

@@ -3,15 +3,15 @@
 
 PyramidPixmap::PyramidPixmap(QString imagePath)
 {
-    QPixmap image;
+    QPixmap *image = new QPixmap;
     loaded = false;
     path = imagePath;
-    if(image.load(imagePath))
+    if(image->load(imagePath))
     {
         loaded = true;
-        imageLayers.push_back(Layer{image, "Original", image.size()});
+        imageLayers.push_back(Layer{image, "Original", image->size(), 1});
         // Находим диагональ изображения по теореме Пифагора.
-        diag = round(sqrt(pow(image.width(), 2) + pow(image.height(), 2)));
+        diag = round(sqrt(pow(image->width(), 2) + pow(image->height(), 2)));
     }
 }
 
@@ -48,9 +48,14 @@ double PyramidPixmap::getDiag()
     return diag;
 }
 
-QPixmap PyramidPixmap::getImage(int i)
+QPixmap* PyramidPixmap::getImage(int i)
 {
     return imageLayers[i].layerImage;
+}
+
+long double PyramidPixmap::getMult(int i)
+{
+    return imageLayers[i].multiplication;
 }
 
 QString PyramidPixmap::getLayerName(int i)
@@ -67,15 +72,13 @@ bool PyramidPixmap::createLayers(int amount, double multiplier)
 {
     for(int i = 0; i < amount; i++)
     {
-        QPixmap redactImage = imageLayers[imageLayers.size() - 1].layerImage;
-        redactImage = redactImage.scaled(QSize(redactImage.width() / multiplier, redactImage.height() / multiplier), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        redactImage = redactImage.scaled(QSize(redactImage.width() * multiplier, redactImage.height() * multiplier), Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        imageLayers.push_back(Layer{redactImage, QString::number(imageLayers.size()), redactImage.size()});
+        QPixmap *redactImage = imageLayers[0].layerImage;
+        imageLayers.push_back(Layer{redactImage, QString::number(imageLayers.size()), imageLayers[imageLayers.size() - 1].layerSize / multiplier, imageLayers[imageLayers.size() - 1].multiplication * multiplier});
     }
     return true;
 }
 
 QString PyramidPixmap::getImgSizeTip()
 {
-    return QString::number(imageLayers[0].layerImage.width()) + "x" + QString::number(imageLayers[0].layerImage.height());
+    return QString::number(imageLayers[0].layerImage->width()) + "x" + QString::number(imageLayers[0].layerImage->height());
 }

@@ -6,9 +6,10 @@
 
 struct Layer
 {
-    QPixmap layerImage;
+    QPixmap *layerImage;
     QString layerName;
     QSize layerSize;
+    long double multiplication;
 };
 
 class PyramidPixmap
@@ -22,7 +23,8 @@ public:
     QSize getLayerSize(int i); // Получение переменной layerSize из структуры Layer.
     QString getPath(); // Получение переменной path.
     double getDiag(); // Получение переменной diag.
-    QPixmap getImage(int i); // Получение переменной layerImage из структуры Layer.
+    QPixmap *getImage(int i); // Получение переменной layerImage из структуры Layer.
+    long double getMult(int i);
     QString getLayerName(int i); // Получение переменной layerName из структуры Layer.
     int getVectorSize(); // Получение размера вектора imageLayers.
     bool createLayers(int amount, double multiplier);
