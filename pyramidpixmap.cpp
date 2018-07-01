@@ -9,10 +9,9 @@ PyramidPixmap::PyramidPixmap(QString imagePath)
     if(image.load(imagePath))
     {
         loaded = true;
-        imageLayers.push_back(Layer{image, "Original"});
-        imageSize = image.size();
+        imageLayers.push_back(Layer{image, "Original", image.size()});
         // Находим диагональ изображения по теореме Пифагора.
-        diag = round(sqrt(pow(imageSize.width(), 2) + pow(imageSize.height(), 2)));
+        diag = round(sqrt(pow(image.width(), 2) + pow(image.height(), 2)));
     }
 }
 
@@ -21,7 +20,6 @@ PyramidPixmap::PyramidPixmap(const PyramidPixmap &copy)
     this->path = copy.path;
     this->diag = copy.diag;
     this->loaded = copy.loaded;
-    this->imageSize = copy.imageSize;
     this->imageLayers = copy.imageLayers;
 }
 
@@ -32,7 +30,12 @@ bool PyramidPixmap::isLoaded()
 
 QSize PyramidPixmap::getImgSize()
 {
-    return imageLayers[0].layerImage.size();
+    return imageLayers[0].layerSize;
+}
+
+QSize PyramidPixmap::getLayerSize(int i)
+{
+    return imageLayers[i].layerSize;
 }
 
 QString PyramidPixmap::getPath()
@@ -60,7 +63,19 @@ int PyramidPixmap::getVectorSize()
     return imageLayers.size();
 }
 
+bool PyramidPixmap::createLayers(int amount, double multiplier)
+{
+    for(int i = 0; i < amount; i++)
+    {
+        QPixmap redactImage = imageLayers[imageLayers.size() - 1].layerImage;
+        redactImage = redactImage.scaled(QSize(redactImage.width() / multiplier, redactImage.height() / multiplier), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        redactImage = redactImage.scaled(QSize(redactImage.width() * multiplier, redactImage.height() * multiplier), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        imageLayers.push_back(Layer{redactImage, QString::number(imageLayers.size()), redactImage.size()});
+    }
+    return true;
+}
+
 QString PyramidPixmap::getImgSizeTip()
 {
-    return QString::number(imageSize.width()) + "x" + QString::number(imageSize.height());
+    return QString::number(imageLayers[0].layerImage.width()) + "x" + QString::number(imageLayers[0].layerImage.height());
 }

@@ -31,12 +31,12 @@ private:
     QComboBox *filesBox;                    QComboBox* createFilesBox();
     QComboBox *layersBox;                   QComboBox* createLayersBox();
     QHBoxLayout *boxLayout;                 QHBoxLayout* createBoxLay();
-    QLabel *fileTip, *layerTip, *sizeTip; // Создаются в createBoxLay;
+    QLabel *fileTip, *layerTip, *sizeTip; // Создаются в createBoxLay();
     QPushButton *spawnLayers;               QPushButton* createSpawnerButton();
     QDoubleSpinBox *multiplier;             QDoubleSpinBox* createMultiplier();
     QSpinBox *layersAmount;                 QSpinBox* createLayersAmount();
     QHBoxLayout *lowerEnd;                  QHBoxLayout* createLowerEnd();
-    QLabel *multiplierTip, *amountTip; // Создаются в createLowerEnd;
+    QLabel *multiplierTip, *amountTip; // Создаются в createLowerEnd();
                                             void createMenu();
                                             void createAll();
 
@@ -45,8 +45,10 @@ private:
     bool isDuplicate(QString checkPath);
     void sortAndRefill();
 private slots:
+    bool startLayersCreation();
     bool openImage();
     void updateStats(int id);
+    void updateLayers(int id);
 };
 
 #endif // PYRAMID_H

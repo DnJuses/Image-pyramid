@@ -57,6 +57,7 @@ QComboBox *pyramid::createFilesBox()
 QComboBox *pyramid::createLayersBox()
 {
     layersBox = new QComboBox(centralWidget);
+    connect(layersBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateLayers(int)));
     return layersBox;
 }
 
@@ -80,6 +81,7 @@ QHBoxLayout *pyramid::createBoxLay()
 QPushButton *pyramid::createSpawnerButton()
 {
     spawnLayers = new QPushButton(tr("Create layers"), centralWidget);
+    connect(spawnLayers, SIGNAL(clicked()), this, SLOT(startLayersCreation()));
     return spawnLayers;
 }
 
@@ -186,6 +188,30 @@ void pyramid::sortAndRefill()
     filesBox->setCurrentIndex(lastId);
 }
 
+bool pyramid::startLayersCreation()
+{
+    if(filesBox->count() == 0)
+    {
+        QMessageBox cantCreate;
+        cantCreate.setWindowTitle("Layer creation");
+        cantCreate.setText("No images loaded.");
+        cantCreate.setIcon(QMessageBox::Critical);
+        cantCreate.exec();
+        return false;
+    }
+    if(openedImages[filesBox->currentIndex()]->createLayers(layersAmount->value(), multiplier->value()))
+    {
+        QMessageBox createSuccess;
+        createSuccess.setWindowTitle("Layer creation");
+        createSuccess.setText(QString::number(layersAmount->value()) + " layers created succesfully!");
+        createSuccess.exec();
+        return true;
+    }
+
+
+    return true;
+}
+
 bool pyramid::openImage()
 {
     QString openFilePath = QFileDialog::getOpenFileName(nullptr, nullptr, nullptr, tr("Any files (*.*);;Image files (*.jpg *.png)"));
@@ -238,10 +264,19 @@ void pyramid::updateStats(int id)
     img->setBrush(imageWdg->backgroundRole(), QBrush(openedImages[id]->getImage(0)));
     imageWdg->resize(openedImages[id]->getImgSize());
     imageWdg->setPalette(*img);
-
+    // Метод очистки комбобокса дважды посылает сигнал, из-за чего слот updateLayers получает невалидные значения и программа крашится
+    // Поэтому на время очистки отключаем отсылку сигналов данным виджетом.
+    layersBox->blockSignals(true);
     layersBox->clear();
+    layersBox->blockSignals(false);
     for(int i = 0; i < openedImages[id]->getVectorSize(); i++)
     {
         layersBox->addItem(openedImages[id]->getLayerName(i));
     }
+}
+
+void pyramid::updateLayers(int id)
+{
+    img->setBrush(imageWdg->backgroundRole(), QBrush(openedImages[filesBox->currentIndex()]->getImage(id)));
+    imageWdg->setPalette(*img);
 }
