@@ -12,6 +12,8 @@
 #include <QPalette>
 #include <QHBoxLayout>
 #include <QVector>
+#include <QDoubleSpinBox>
+#include <QSpinBox>
 #include "pyramidpixmap.h"
 
 class pyramid : public QMainWindow
@@ -26,14 +28,17 @@ private:
     QVBoxLayout *centralLayout;             QVBoxLayout* createCLayout();
     QWidget *imageWdg; QPalette *img;       QWidget* createImage();
     QScrollArea *imageScroll;               QScrollArea* createScroll();
-    QComboBox *files;                       QComboBox* createFilesBox();
-    QLabel *fileTip, *layerTip, *sizeTip; // Создаются в createFilesBox;
-    QComboBox *layers;                      QComboBox* createLayersBox();
+    QComboBox *filesBox;                    QComboBox* createFilesBox();
+    QComboBox *layersBox;                   QComboBox* createLayersBox();
     QHBoxLayout *boxLayout;                 QHBoxLayout* createBoxLay();
-    QPushButton *spawnLayers;               QHBoxLayout* createSpawner();
+    QLabel *fileTip, *layerTip, *sizeTip; // Создаются в createBoxLay;
+    QPushButton *spawnLayers;               QPushButton* createSpawnerButton();
+    QDoubleSpinBox *multiplier;             QDoubleSpinBox* createMultiplier();
+    QSpinBox *layersAmount;                 QSpinBox* createLayersAmount();
+    QHBoxLayout *lowerEnd;                  QHBoxLayout* createLowerEnd();
+    QLabel *multiplierTip, *amountTip; // Создаются в createLowerEnd;
                                             void createMenu();
                                             void createAll();
-
 
 
     void setSizeTip(QString imageSize);

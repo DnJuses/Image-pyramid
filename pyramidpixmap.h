@@ -1,7 +1,14 @@
 #ifndef PYRAMIDPIXMAP_H
 #define PYRAMIDPIXMAP_H
 #include <QPixmap>
+#include <QVector>
+#include <QString>
 
+struct Layer
+{
+    QPixmap layerImage;
+    QString layerName;
+};
 
 class PyramidPixmap
 {
@@ -13,13 +20,14 @@ public:
     QSize getImgSize(); // Получение переменной imageSize.
     QString getPath(); // Получение переменной path.
     double getDiag(); // Получение переменной diag.
-    QPixmap getImage(); // Получение переменной image.
+    QPixmap getImage(int i); // Получение переменной layerImage из структуры Layer.
+    QString getLayerName(int i); // Получение переменной layerName из структуры Layer.
+    int getVectorSize(); // Получение размера вектора imageLayers.
 private:
-    QPixmap image; // Хранит само изображение.
+    QVector<Layer> imageLayers; // Хранит слой с изображением и его названием.
     QSize imageSize; // Хранит размер изображения.
     QString path; // Хранит путь к изображению.
     double diag; // Хранит диагональ изображения.
     bool loaded; // True - изображение успешно загружено и готово к использованию. Иначе false.
 };
-
 #endif // PYRAMIDPIXMAP_H

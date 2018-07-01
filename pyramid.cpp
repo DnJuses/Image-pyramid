@@ -10,23 +10,23 @@
 
 pyramid::pyramid(QWidget *parent) : QMainWindow(parent)
 {
-    this->resize(550, 550);
-    createAll();
+    this->resize(518, 594);
+    this->createAll();
 }
 
 QWidget *pyramid::createCentral()
 {
     centralWidget = new QWidget(this);
-    centralWidget->setLayout(createCLayout());
+    centralWidget->setLayout(this->createCLayout());
     return centralWidget;
 }
 
 QVBoxLayout *pyramid::createCLayout()
 {
     centralLayout = new QVBoxLayout(centralWidget);
-    centralLayout->addLayout(createBoxLay());
-    centralLayout->addWidget(createScroll());
-    centralLayout->addLayout(createSpawner());
+    centralLayout->addLayout(this->createBoxLay());
+    centralLayout->addWidget(this->createScroll());
+    centralLayout->addLayout(this->createLowerEnd());
     return centralLayout;
 }
 
@@ -43,21 +43,21 @@ QScrollArea *pyramid::createScroll()
     QScrollArea *imageScroll = new QScrollArea(centralWidget);
     imageScroll->setFixedSize(500, 500);
     imageScroll->setAlignment(Qt::AlignCenter);
-    imageScroll->setWidget(createImage());
+    imageScroll->setWidget(this->createImage());
     return imageScroll;
 }
 
 QComboBox *pyramid::createFilesBox()
 {
-    files = new QComboBox(centralWidget);
-    connect(files, SIGNAL(currentIndexChanged(int)), this, SLOT(updateStats(int)));
-    return files;
+    filesBox = new QComboBox(centralWidget);
+    connect(filesBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateStats(int)));
+    return filesBox;
 }
 
 QComboBox *pyramid::createLayersBox()
 {
-    layers = new QComboBox(centralWidget);
-    return layers;
+    layersBox = new QComboBox(centralWidget);
+    return layersBox;
 }
 
 QHBoxLayout *pyramid::createBoxLay()
@@ -68,21 +68,48 @@ QHBoxLayout *pyramid::createBoxLay()
     boxLayout = new QHBoxLayout;
     boxLayout->addWidget(fileTip);
     boxLayout->addSpacing(-110);
-    boxLayout->addWidget(createFilesBox());
+    boxLayout->addWidget(this->createFilesBox());
     boxLayout->addSpacing(40);
     boxLayout->addWidget(layerTip);
     boxLayout->addSpacing(-100);
-    boxLayout->addWidget(createLayersBox());
+    boxLayout->addWidget(this->createLayersBox());
     boxLayout->addWidget(sizeTip);
     return boxLayout;
 }
 
-QHBoxLayout *pyramid::createSpawner()
+QPushButton *pyramid::createSpawnerButton()
 {
     spawnLayers = new QPushButton(tr("Create layers"), centralWidget);
-    QHBoxLayout *lowerEnd = new QHBoxLayout;
+    return spawnLayers;
+}
+
+QDoubleSpinBox *pyramid::createMultiplier()
+{
+    multiplier = new QDoubleSpinBox(centralWidget);
+    multiplier->setValue(2.0);
+    return multiplier;
+}
+
+QSpinBox *pyramid::createLayersAmount()
+{
+    layersAmount = new QSpinBox(centralWidget);
+    layersAmount->setMinimum(0);
+    layersAmount->setValue(3);
+    return layersAmount;
+}
+
+QHBoxLayout *pyramid::createLowerEnd()
+{
+    multiplierTip = new QLabel(tr("Multiplier:"), centralWidget);
+    amountTip = new QLabel(tr("Layers:"), centralWidget);
+    lowerEnd = new QHBoxLayout;
     lowerEnd->addStretch();
-    lowerEnd->addWidget(spawnLayers);
+    lowerEnd->addWidget(multiplierTip);
+    lowerEnd->addWidget(this->createMultiplier());
+    lowerEnd->addWidget(amountTip);
+    lowerEnd->addWidget(this->createLayersAmount());
+    lowerEnd->addSpacing(15);
+    lowerEnd->addWidget(this->createSpawnerButton());
     return lowerEnd;
 }
 
@@ -97,7 +124,7 @@ void pyramid::createMenu()
 
 void pyramid::createAll()
 {
-    createMenu();
+    this->createMenu();
     this->setCentralWidget(createCentral());
 }
 
@@ -138,23 +165,25 @@ void pyramid::sortAndRefill()
             else break;
         }
     }
-    files->blockSignals(true);
-    files->clear(); // Дважды посылает сигнал, из-за чего слот updateStats получает невалидные значения и программа крашится
-    files->blockSignals(false);
+    filesBox->blockSignals(true);
+    // Метод очистки комбобокса дважды посылает сигнал, из-за чего слот updateStats получает невалидные значения и программа крашится
+    // Поэтому на время очистки отключаем отсылку сигналов данным виджетом.
+    filesBox->clear();
+    filesBox->blockSignals(false);
     // Очистка и перезаполнение бокса
     for (int i = 0; i < openedImages.size(); i++)
     {
         int pos = openedImages[i]->getPath().lastIndexOf("/");
         if(pos != -1)
         {
-            files->addItem(openedImages[i]->getPath().remove(0, pos + 1) + "   " + openedImages[i]->getImgSizeTip());
+            filesBox->addItem(openedImages[i]->getPath().remove(0, pos + 1) + "   " + openedImages[i]->getImgSizeTip());
         }
         else
         {
-            files->addItem(openedImages[i]->getPath() + "   " + openedImages[i]->getImgSizeTip());
+            filesBox->addItem(openedImages[i]->getPath() + "   " + openedImages[i]->getImgSizeTip());
         }
     }
-    files->setCurrentIndex(lastId);
+    filesBox->setCurrentIndex(lastId);
 }
 
 bool pyramid::openImage()
@@ -206,7 +235,13 @@ bool pyramid::openImage()
 void pyramid::updateStats(int id)
 {
     this->setSizeTip(openedImages[id]->getImgSizeTip());
-    img->setBrush(imageWdg->backgroundRole(), QBrush(openedImages[id]->getImage()));
+    img->setBrush(imageWdg->backgroundRole(), QBrush(openedImages[id]->getImage(0)));
     imageWdg->resize(openedImages[id]->getImgSize());
     imageWdg->setPalette(*img);
+
+    layersBox->clear();
+    for(int i = 0; i < openedImages[id]->getVectorSize(); i++)
+    {
+        layersBox->addItem(openedImages[id]->getLayerName(i));
+    }
 }

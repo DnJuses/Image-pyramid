@@ -3,11 +3,13 @@
 
 PyramidPixmap::PyramidPixmap(QString imagePath)
 {
+    QPixmap image;
     loaded = false;
     path = imagePath;
     if(image.load(imagePath))
     {
         loaded = true;
+        imageLayers.push_back(Layer{image, "Original"});
         imageSize = image.size();
         // Находим диагональ изображения по теореме Пифагора.
         diag = round(sqrt(pow(imageSize.width(), 2) + pow(imageSize.height(), 2)));
@@ -18,9 +20,9 @@ PyramidPixmap::PyramidPixmap(const PyramidPixmap &copy)
 {
     this->path = copy.path;
     this->diag = copy.diag;
-    this->image = copy.image;
     this->loaded = copy.loaded;
     this->imageSize = copy.imageSize;
+    this->imageLayers = copy.imageLayers;
 }
 
 bool PyramidPixmap::isLoaded()
@@ -30,7 +32,7 @@ bool PyramidPixmap::isLoaded()
 
 QSize PyramidPixmap::getImgSize()
 {
-    return image.size();
+    return imageLayers[0].layerImage.size();
 }
 
 QString PyramidPixmap::getPath()
@@ -43,9 +45,19 @@ double PyramidPixmap::getDiag()
     return diag;
 }
 
-QPixmap PyramidPixmap::getImage()
+QPixmap PyramidPixmap::getImage(int i)
 {
-    return image;
+    return imageLayers[i].layerImage;
+}
+
+QString PyramidPixmap::getLayerName(int i)
+{
+    return imageLayers[i].layerName;
+}
+
+int PyramidPixmap::getVectorSize()
+{
+    return imageLayers.size();
 }
 
 QString PyramidPixmap::getImgSizeTip()
