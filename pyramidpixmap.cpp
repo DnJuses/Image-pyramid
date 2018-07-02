@@ -30,10 +30,10 @@ bool PyramidPixmap::isLoaded()
 
 QSize PyramidPixmap::getImgSize()
 {
-    return imageLayers[0].layerSize;
+    return imageLayers[0].layerSize.toSize();
 }
 
-QSize PyramidPixmap::getLayerSize(int i)
+QSizeF PyramidPixmap::getLayerSize(int i)
 {
     return imageLayers[i].layerSize;
 }

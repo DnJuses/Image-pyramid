@@ -8,7 +8,7 @@ struct Layer
 {
     QPixmap *layerImage;
     QString layerName;
-    QSize layerSize;
+    QSizeF layerSize;
     long double multiplication;
 };
 
@@ -20,7 +20,7 @@ public:
     bool isLoaded(); // Получение переменной loaded.
     QString getImgSizeTip(); // Получение переменной imageSize, переведенной в QString для более простого использования в QLabel.
     QSize getImgSize(); // Получение переменной imageSize.
-    QSize getLayerSize(int i); // Получение переменной layerSize из структуры Layer.
+    QSizeF getLayerSize(int i); // Получение переменной layerSize из структуры Layer.
     QString getPath(); // Получение переменной path.
     double getDiag(); // Получение переменной diag.
     QPixmap *getImage(int i); // Получение переменной layerImage из структуры Layer.

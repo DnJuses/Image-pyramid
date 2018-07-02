@@ -4,6 +4,7 @@
 #include <QMenu>
 #include <QPalette>
 #include <QDebug>
+#include <QtMath>
 #include <QMessageBox>
 #include <QScrollArea>
 
@@ -149,23 +150,27 @@ void pyramid::setSizeTip(QString imageSize)
 void pyramid::calculateRecommend(double mult)
 {
     if(filesBox->count() == 0 || mult == 0) return;
-    QSize lastLayerSize = openedImages[filesBox->currentIndex()]->getLayerSize(layersBox->count() - 1);
+    QSizeF lastLayerSize = openedImages[filesBox->currentIndex()]->getLayerSize(layersBox->count() - 1);
     QSize originalSize = openedImages[filesBox->currentIndex()]->getImgSize();
     int i = 0;
     for(i; ; i++)
     {
         lastLayerSize /= mult;
-        if(lastLayerSize.width() <= 1 ||
-           lastLayerSize.height() <= 1)
-        {
-            break;
+        if(mult > 1){
+            if(floor(lastLayerSize.width()) == 0 ||
+               floor(lastLayerSize.height()) == 0)
+            {
+                break;
+            }
         }
-        else if(lastLayerSize.width() >= originalSize.width() &&
-                lastLayerSize.height() >= originalSize.height())
-        {
-            break;
+        else if(mult < 1){
+            if(lastLayerSize.width() > originalSize.width() &&
+                    lastLayerSize.height() > originalSize.height())
+            {
+                break;
+            }
         }
-        else if((lastLayerSize / mult) == lastLayerSize)
+        if((lastLayerSize / mult) == lastLayerSize)
         {
             break;
         }
@@ -341,10 +346,14 @@ void pyramid::updateLayers(int id)
     static QPixmap *generatedImage;
     if(generatedImage != nullptr) delete generatedImage;
     generatedImage = new QPixmap(*(openedImages[filesBox->currentIndex()]->getImage(0)));
-    QSize multipliedSize = openedImages[filesBox->currentIndex()]->getLayerSize(id);
-    QSize originalSize = openedImages[filesBox->currentIndex()]->getLayerSize(0);
-    *generatedImage = generatedImage->scaled(multipliedSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    *generatedImage = generatedImage->scaled(originalSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    QSizeF multipliedSize = openedImages[filesBox->currentIndex()]->getLayerSize(id);
+    QSize originalSize = openedImages[filesBox->currentIndex()]->getImgSize();
+    qDebug() << "Original size: " << originalSize;
+    *generatedImage = generatedImage->scaled(multipliedSize.toSize(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    qDebug() << "Size before: " << generatedImage->size();
+    *generatedImage = generatedImage->scaled(originalSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    qDebug() << "Size after: " << generatedImage->size();
+    qDebug() << "Multiplier: " << static_cast<double>(openedImages[filesBox->currentIndex()]->getMult(id));
     this->calculateRecommend(multiplier->value());
     img->setBrush(imageWdg->backgroundRole(), QBrush(*generatedImage));
 
