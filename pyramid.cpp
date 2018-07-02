@@ -89,13 +89,17 @@ QDoubleSpinBox *pyramid::createMultiplier()
 {
     multiplier = new QDoubleSpinBox(centralWidget);
     multiplier->setValue(2.0);
+    multiplier->setMinimum(0.01);
+    multiplier->setMaximum(99);
+    connect(multiplier, SIGNAL(valueChanged(double)), this, SLOT(calculateRecommend(double)));
     return multiplier;
 }
 
 QSpinBox *pyramid::createLayersAmount()
 {
     layersAmount = new QSpinBox(centralWidget);
-    layersAmount->setMinimum(0);
+    layersAmount->setMinimum(1);
+    layersAmount->setMaximum(99);
     layersAmount->setValue(3);
     return layersAmount;
 }
@@ -105,6 +109,7 @@ QHBoxLayout *pyramid::createLowerEnd()
     multiplierTip = new QLabel(tr("Multiplier:"), centralWidget);
     amountTip = new QLabel(tr("Layers:"), centralWidget);
     lowerEnd = new QHBoxLayout;
+    lowerEnd->addWidget(createRecommendTip());
     lowerEnd->addStretch();
     lowerEnd->addWidget(multiplierTip);
     lowerEnd->addWidget(this->createMultiplier());
@@ -113,6 +118,12 @@ QHBoxLayout *pyramid::createLowerEnd()
     lowerEnd->addSpacing(15);
     lowerEnd->addWidget(this->createSpawnerButton());
     return lowerEnd;
+}
+
+QLabel *pyramid::createRecommendTip()
+{
+    recommendTip = new QLabel("Recommended number of layers: 0", centralWidget);
+    return recommendTip;
 }
 
 void pyramid::createMenu()
@@ -133,6 +144,33 @@ void pyramid::createAll()
 void pyramid::setSizeTip(QString imageSize)
 {
     sizeTip->setText("Size: " + imageSize);
+}
+
+void pyramid::calculateRecommend(double mult)
+{
+    if(filesBox->count() == 0 || mult == 0) return;
+    QSize lastLayerSize = openedImages[filesBox->currentIndex()]->getLayerSize(layersBox->count() - 1);
+    QSize originalSize = openedImages[filesBox->currentIndex()]->getImgSize();
+    int i = 0;
+    for(i; ; i++)
+    {
+        lastLayerSize /= mult;
+        if(lastLayerSize.width() <= 1 ||
+           lastLayerSize.height() <= 1)
+        {
+            break;
+        }
+        else if(lastLayerSize.width() >= originalSize.width() &&
+                lastLayerSize.height() >= originalSize.height())
+        {
+            break;
+        }
+        else if((lastLayerSize / mult) == lastLayerSize)
+        {
+            break;
+        }
+    }
+    recommendTip->setText("Recommended number of layers: " + QString::number(i));
 }
 
 bool pyramid::isDuplicate(QString checkPath)
@@ -188,8 +226,22 @@ void pyramid::sortAndRefill()
     filesBox->setCurrentIndex(lastId);
 }
 
+void pyramid::updateLayersBox()
+{
+    layersBox->blockSignals(true);
+    layersBox->clear();
+    layersBox->blockSignals(false);
+    int id = filesBox->currentIndex();
+    for(int i = 0; i < openedImages[id]->getVectorSize(); i++)
+    {
+        layersBox->addItem(openedImages[id]->getLayerName(i));
+    }
+}
+
 bool pyramid::startLayersCreation()
 {
+    QString tipText = recommendTip->text();
+    int tipNum = tipText.remove(0, tipText.indexOf(QRegExp("[0-9]"), 0)).toInt();
     if(filesBox->count() == 0)
     {
         QMessageBox cantCreate;
@@ -199,9 +251,25 @@ bool pyramid::startLayersCreation()
         cantCreate.exec();
         return false;
     }
+    else if(tipNum < layersAmount->value())
+    {
+        QMessageBox::StandardButton conf;
+        conf = QMessageBox::question(0,
+                                     "Layer creation",
+                                     "The number of layers that you want to create is greater than recommended number. Program can crash. Continue?",
+                                     QMessageBox::Yes | QMessageBox::No,
+                                     QMessageBox::No);
+                if(conf == QMessageBox::No)
+                {
+                    return true;
+                }
+    }
     if(openedImages[filesBox->currentIndex()]->createLayers(layersAmount->value(), multiplier->value()))
     {
-
+        this->updateLayersBox();
+        recommendTip->setText("Recommended number of layers: " + QString::number(tipNum < layersAmount->value() ?
+                                                                                     0 :
+                                                                                     tipNum - layersAmount->value()));
         QMessageBox createSuccess;
         createSuccess.setWindowTitle("Layer creation");
         createSuccess.setText(QString::number(layersAmount->value()) + " layers created succesfully!");
@@ -265,15 +333,7 @@ void pyramid::updateStats(int id)
     img->setBrush(imageWdg->backgroundRole(), QBrush(*(openedImages[id]->getImage(0))));
     imageWdg->resize(openedImages[id]->getImgSize());
     imageWdg->setPalette(*img);
-    // Метод очистки комбобокса дважды посылает сигнал, из-за чего слот updateLayers получает невалидные значения и программа крашится
-    // Поэтому на время очистки отключаем отсылку сигналов данным виджетом.
-    layersBox->blockSignals(true);
-    layersBox->clear();
-    layersBox->blockSignals(false);
-    for(int i = 0; i < openedImages[id]->getVectorSize(); i++)
-    {
-        layersBox->addItem(openedImages[id]->getLayerName(i));
-    }
+    this->updateLayersBox();
 }
 
 void pyramid::updateLayers(int id)
@@ -285,6 +345,8 @@ void pyramid::updateLayers(int id)
     QSize originalSize = openedImages[filesBox->currentIndex()]->getLayerSize(0);
     *generatedImage = generatedImage->scaled(multipliedSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     *generatedImage = generatedImage->scaled(originalSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    this->calculateRecommend(multiplier->value());
     img->setBrush(imageWdg->backgroundRole(), QBrush(*generatedImage));
+
     imageWdg->setPalette(*img);
 }

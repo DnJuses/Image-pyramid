@@ -37,6 +37,7 @@ private:
     QSpinBox *layersAmount;                 QSpinBox* createLayersAmount();
     QHBoxLayout *lowerEnd;                  QHBoxLayout* createLowerEnd();
     QLabel *multiplierTip, *amountTip; // Создаются в createLowerEnd();
+    QLabel *recommendTip;                    QLabel* createRecommendTip();
                                             void createMenu();
                                             void createAll();
 
@@ -44,7 +45,9 @@ private:
     void setSizeTip(QString imageSize);
     bool isDuplicate(QString checkPath);
     void sortAndRefill();
+    void updateLayersBox();
 private slots:
+    void calculateRecommend(double mult);
     bool startLayersCreation();
     bool openImage();
     void updateStats(int id);
