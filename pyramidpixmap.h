@@ -6,10 +6,10 @@
 
 struct Layer
 {
-    QPixmap *layerImage;
-    QString layerName;
-    QSizeF layerSize;
-    long double multiplication;
+    QPixmap *layerImage; // Изображение слоя.
+    QString layerName; // Название слоя.
+    QSizeF layerSize; // Размер слоя.
+    long double multiplication; // Множитель, полученный путем умножения предыдущих множителей.
 };
 
 class PyramidPixmap
@@ -24,9 +24,13 @@ public:
     QString getPath(); // Получение переменной path.
     double getDiag(); // Получение переменной diag.
     QPixmap *getImage(int i); // Получение переменной layerImage из структуры Layer.
-    long double getMult(int i);
+    long double getMult(int i); // Получение переменной multiplication из структуры Layer.
     QString getLayerName(int i); // Получение переменной layerName из структуры Layer.
     int getVectorSize(); // Получение размера вектора imageLayers.
+    // Функция создает указатели на изображения и данные о множителе, размере и имени
+    // Позже указатели будут в слоте из класса pyramid updateLayers преобразовываться в обычные изображения.
+    // В результате такого подхода существенно экономится память, а также увеличивается скорость генерации слоев.
+    // Из минусов можно выделить только более долгое время получения доступа к слою (мгновенно->0.5 сек).
     bool createLayers(int amount, double multiplier);
 private:
     QVector<Layer> imageLayers; // Хранит слой с изображением и его название с размером.
