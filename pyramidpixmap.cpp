@@ -55,6 +55,7 @@ double PyramidPixmap::getDiag()
     return diag;
 }
 
+// Дает указателю на векторы новый вектор.
 void PyramidPixmap::setOpVector(int num)
 {
     if (num == 0)

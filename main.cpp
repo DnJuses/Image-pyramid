@@ -18,7 +18,8 @@ int main(int argc, char *argv[])
                strcmp(argv[i], "-h") == 0 ||
                strcmp(argv[i], "-?") == 0 ||
                strcmp(argv[i], "-v") == 0 ||
-               strcmp(argv[i], "--version") == 0)
+               strcmp(argv[i], "--version") == 0 ||
+               strcmp(argv[i], "-s") == 0)
         {
             continue;
         }
@@ -60,10 +61,6 @@ int main(int argc, char *argv[])
         // Иначе это опция программы и следующим должно идти ее свойство.
         j = 1;
     }
-    for(int i = 1; i < argc; i++)
-    {
-        std::cout << argv[i] << std::endl;
-    }
     QApplication a(argc, argv);
     pyramid w;
     w.setWindowTitle("Image pyramid");
@@ -91,11 +88,16 @@ int main(int argc, char *argv[])
     QCoreApplication::translate("main", "Sets multiplier <multiplier> for layers."),
     QCoreApplication::translate("main", "multiplier"));
     parser.addOption(setMultiplierOption);
+    // Опция, с помощью которой передается режим отображения изображений.
+    QCommandLineOption switchModeOption("s",
+    QCoreApplication::translate("main", "Determines the switch mode of images."));
+    parser.addOption(switchModeOption);
 
     parser.process(a);
     QStringList passedFiles = parser.values(passFileOption);
     QStringList passedAmounts = parser.values(setAmountOption);
     QStringList passedMultipliers = parser.values(setMultiplierOption);
+    bool passedSwitch = parser.isSet(switchModeOption);
     if(passedFiles.length() != 0)
     {
         // Проверка аргументов на валидность.
@@ -212,7 +214,7 @@ int main(int argc, char *argv[])
         checksSuccess.setWindowTitle("Argument passing");
         checksSuccess.setText("All checks passed!");
         checksSuccess.exec();
-        w.openImagesFromList(passedFiles, passedAmounts, passedMultipliers);
+        w.openImagesFromList(passedFiles, passedAmounts, passedMultipliers, passedSwitch);
     }
     return a.exec();
 }

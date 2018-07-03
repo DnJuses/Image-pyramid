@@ -24,9 +24,8 @@ public:
     // Используется только при консольном вводе.
     // Функция открывает файлы с поступившего в него в качестве аргумента fileList, попутно проверяя пути на валидность.
     // После успешного открытия, создает указанное в amountList количество слоев с множителем в multiplierList.
-    void openImagesFromList(QStringList fileList, QStringList amountList, QStringList multiplierList);
+    void openImagesFromList(QStringList fileList, QStringList amountList, QStringList multiplierList, bool switcher);
 private:
-    int mode;
 
     QVector<PyramidPixmap*> openedImages;
     QWidget *centralWidget;                 QWidget* createCentral();
@@ -43,8 +42,8 @@ private:
     QHBoxLayout *lowerEnd;                  QHBoxLayout* createLowerEnd();
     QLabel *multiplierTip, *amountTip; // Создаются в createLowerEnd();
     QLabel *recommendTip;                    QLabel* createRecommendTip();
-                                            void createMenu();
-                                            void createAll();
+    QAction *switchMode, *openFile;          void createMenu();
+                                             void createAll();
 
     // Функция устанавливает размер изображения в виде QString в label sizeTip.
     void setSizeTip(QString imageSize);
@@ -56,6 +55,10 @@ private:
     void sortAndRefill();
     // Слот обновляет содержимое ComboBox'а layersBox, выводя новые изменения.
     void updateLayersBox();
+    // Функция отображает слои в зависимости от режима, в котором сейчас находится программа.
+    // 1-ый - изменяет размер изображения, затем возвращает его в оригинальное состояние. Получается эффект "размыливания"
+    // 2-ой - изменяет размер изображения, делая его меньше или больше оригинала.
+    void transformByMode(int mode, QPixmap *image, int id);
 private slots:
     // Слот подсчитывает максимально возможное к созданию количество слоев.
     void calculateRecommend(double mult);
@@ -64,8 +67,9 @@ private slots:
     // Каждый последующий слой пирамиды уменьшается на значение из DoubleSpinBox'а multiplier
     // После уменьшения изображения оно вновь растягивается до размеров оригинального изображения из-за чего оно размыливается.
     bool startLayersCreation();
-    void transformByMode(int mode, QPixmap *image, int id);
-    void switchViewMode();
+    // Переключает режим программы.
+    // За переключение отвечает switchMode.
+    void switchViewMode(bool mode);
     // Единственное действие, которое используется в верхнем меню.
     // Слот вызывает файловый менеджер для открытия файлов с изображениями.
     // После открытия - проверяет пути на валидность и добавляет файл в ComboBox filesBox, попутно его отсортировав и проверив на дупликаты.

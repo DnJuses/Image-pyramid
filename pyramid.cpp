@@ -11,7 +11,6 @@
 
 pyramid::pyramid(QWidget *parent) : QMainWindow(parent)
 {
-    this->mode = 0;
     this->setFixedSize(518, 594); // Оптимальный размер основного окна
     this->createAll();
 
@@ -21,6 +20,7 @@ pyramid::pyramid(QWidget *parent) : QMainWindow(parent)
      * connect(spawnLayers, SIGNAL(clicked()), this, SLOT(startLayersCreation())); (createSpawnerButton:114)
      * connect(multiplier, SIGNAL(valueChanged(double)), this, SLOT(calculateRecommend(double))); (createMultiplier:126)
      * connect(openFile, QAction::triggered, this, pyramid::openImage); (createMenu:173)
+     * connect(switchMode, QAction::triggered, this, pyramid::switchViewMode); (createMenu:)
      */
 }
 
@@ -170,15 +170,15 @@ QHBoxLayout *pyramid::createLowerEnd()
 void pyramid::createMenu()
 {
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
-    QAction *openFile = new QAction(tr("&Open image"), this);
+    openFile = new QAction(tr("&Open image"), this);
     openFile->setShortcuts(QKeySequence::Open);
     connect(openFile, QAction::triggered, this, pyramid::openImage);
     fileMenu->addAction(openFile);
     QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
-    QAction *switchMode = new QAction(tr("&Switch view mode"));
+    switchMode = new QAction(tr("&Switch view mode"));
     switchMode->setCheckable(true);
     switchMode->setChecked(0);
-    connect(switchMode, QAction::triggered, this, pyramid::switchViewMode);
+    connect(switchMode, SIGNAL(triggered(bool)), this, SLOT(switchViewMode(bool)));
     viewMenu->addAction(switchMode);
 }
 
@@ -308,10 +308,11 @@ void pyramid::updateLayersBox()
 // Используется только при консольном вводе.
 // Функция открывает файлы с поступившего в него в качестве аргумента fileList, попутно проверяя пути на валидность.
 // После успешного открытия, создает указанное в amountList количество слоев с множителем в multiplierList.
-void pyramid::openImagesFromList(QStringList fileList, QStringList amountList, QStringList multiplierList)
+void pyramid::openImagesFromList(QStringList fileList, QStringList amountList, QStringList multiplierList, bool switcher)
 {
     for(int i = 0; i < fileList.length(); i++)
     {
+
        QString filePath = fileList.at(i);
        int createAmount = QString(amountList.at(i)).toInt();
        double multi = QString(multiplierList.at(i)).toDouble();
@@ -324,6 +325,11 @@ void pyramid::openImagesFromList(QStringList fileList, QStringList amountList, Q
            {
                openedImages.push_back(newImage);
                this->sortAndRefill();
+               if(openedImages.size() >= 1 && switcher)
+               {
+                   switchMode->setChecked(1);
+                   this->switchViewMode(1);
+               }
                layersAmount->setValue(createAmount);
                multiplier->setValue(multi);
                startLayersCreation();
@@ -394,7 +400,10 @@ bool pyramid::startLayersCreation() // СЛОТ |===============================
     return true;
 }
 
-void pyramid::transformByMode(int mode, QPixmap *image, int id)
+// Слот создает слои в зависимости от режима, в котором сейчас находится программа.
+// 1-ый - изменяет размер изображения, затем возвращает его в оригинальное состояние. Получается эффект "размыливания"
+// 2-ой - изменяет размер изображения, делая его меньше или больше оригинала.
+void pyramid::transformByMode(int mode, QPixmap *image, int id) // СЛОТ |=====================================================|
 {
     QSizeF multipliedSize = openedImages[filesBox->currentIndex()]->getLayerSize(id);
     QSize originalSize = openedImages[filesBox->currentIndex()]->getImgSize();
@@ -410,12 +419,23 @@ void pyramid::transformByMode(int mode, QPixmap *image, int id)
     }
 }
 
-void pyramid::switchViewMode()
+// Переключает режим программы.
+// За переключение отвечает switchMode.
+void pyramid::switchViewMode(bool mode) // СЛОТ |=====================================================|
 {
-    mode = (mode + 1) % 2;
-    openedImages[filesBox->currentIndex()]->setOpVector(mode);
-    imageWdg->resize(openedImages[filesBox->currentIndex()]->getImgSize());
-    this->updateLayersBox();
+    if(filesBox->count() > 0)
+    {
+        for(int i = 0; i < filesBox->count(); i++)
+        {
+            openedImages[i]->setOpVector(mode);
+        }
+        imageWdg->resize(openedImages[filesBox->currentIndex()]->getImgSize());
+        this->updateLayersBox();
+    }
+    else
+    {
+        switchMode->setChecked(0);
+    }
 }
 
 // Единственное действие, которое используется в верхнем меню.
@@ -455,6 +475,7 @@ bool pyramid::openImage() // СЛОТ |=========================================
     if(newImage->isLoaded())
     {
         // Тест на валидность пройден - помещаем изображение в ComboBox и сортируем его.
+        newImage->setOpVector(switchMode->isChecked());
         openedImages.push_back(newImage);
         this->sortAndRefill();
         return true;
@@ -489,7 +510,7 @@ void pyramid::updateLayers(int id) // СЛОТ |================================
     static QPixmap *generatedImage;
     if(generatedImage != nullptr) delete generatedImage;
     generatedImage = new QPixmap(*(openedImages[filesBox->currentIndex()]->getImage(0)));
-    this->transformByMode(mode, generatedImage, id);
+    this->transformByMode(switchMode->isChecked(), generatedImage, id);
     this->setSizeTip(openedImages[filesBox->currentIndex()]->getImgSizeTip(id));
     this->calculateRecommend(multiplier->value());
     img->setBrush(imageWdg->backgroundRole(), QBrush(*generatedImage));

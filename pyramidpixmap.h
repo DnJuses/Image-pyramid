@@ -23,7 +23,7 @@ public:
     QSizeF getLayerSize(int i); // Получение переменной layerSize из структуры Layer.
     QString getPath(); // Получение переменной path.
     double getDiag(); // Получение переменной diag.
-    void setOpVector(int num);
+    void setOpVector(int num); // Дает указателю на векторы новый вектор.
     QPixmap *getImage(int i); // Получение переменной layerImage из структуры Layer.
     long double getMult(int i); // Получение переменной multiplication из структуры Layer.
     QString getLayerName(int i); // Получение переменной layerName из структуры Layer.
@@ -34,7 +34,7 @@ public:
     // Из минусов можно выделить только более долгое время получения доступа к слою (мгновенно->0.5 сек).
     bool createLayers(int amount, double multiplier);
 private:
-    QVector<Layer> *manipulatingVector;
+    QVector<Layer> *manipulatingVector; // Указатель на векторы. С его помощью идет манипулирование двумя другими векторами.
     QVector<Layer> imageLayers; // Хранит слой с изображением и его название с размером.
     QVector<Layer> originalPyramidLayers; // Хранит оригинальные, уменьшаемые слои пирамиды.
     QString path; // Хранит путь к изображению.
