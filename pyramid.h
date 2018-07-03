@@ -26,6 +26,8 @@ public:
     // После успешного открытия, создает указанное в amountList количество слоев с множителем в multiplierList.
     void openImagesFromList(QStringList fileList, QStringList amountList, QStringList multiplierList);
 private:
+    int mode;
+
     QVector<PyramidPixmap*> openedImages;
     QWidget *centralWidget;                 QWidget* createCentral();
     QVBoxLayout *centralLayout;             QVBoxLayout* createCLayout();
@@ -62,6 +64,8 @@ private slots:
     // Каждый последующий слой пирамиды уменьшается на значение из DoubleSpinBox'а multiplier
     // После уменьшения изображения оно вновь растягивается до размеров оригинального изображения из-за чего оно размыливается.
     bool startLayersCreation();
+    void transformByMode(int mode, QPixmap *image, int id);
+    void switchViewMode();
     // Единственное действие, которое используется в верхнем меню.
     // Слот вызывает файловый менеджер для открытия файлов с изображениями.
     // После открытия - проверяет пути на валидность и добавляет файл в ComboBox filesBox, попутно его отсортировав и проверив на дупликаты.

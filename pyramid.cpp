@@ -11,6 +11,7 @@
 
 pyramid::pyramid(QWidget *parent) : QMainWindow(parent)
 {
+    this->mode = 0;
     this->setFixedSize(518, 594); // Оптимальный размер основного окна
     this->createAll();
 
@@ -173,6 +174,12 @@ void pyramid::createMenu()
     openFile->setShortcuts(QKeySequence::Open);
     connect(openFile, QAction::triggered, this, pyramid::openImage);
     fileMenu->addAction(openFile);
+    QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
+    QAction *switchMode = new QAction(tr("&Switch view mode"));
+    switchMode->setCheckable(true);
+    switchMode->setChecked(0);
+    connect(switchMode, QAction::triggered, this, pyramid::switchViewMode);
+    viewMenu->addAction(switchMode);
 }
 
 // Создает меню и устанавливает центральный виджет.
@@ -387,6 +394,30 @@ bool pyramid::startLayersCreation() // СЛОТ |===============================
     return true;
 }
 
+void pyramid::transformByMode(int mode, QPixmap *image, int id)
+{
+    QSizeF multipliedSize = openedImages[filesBox->currentIndex()]->getLayerSize(id);
+    QSize originalSize = openedImages[filesBox->currentIndex()]->getImgSize();
+    if(mode == 0)
+    {
+        *image = image->scaled(multipliedSize.toSize(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        *image = image->scaled(originalSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    }
+    else
+    {
+        *image = image->scaled(multipliedSize.toSize(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        imageWdg->resize(multipliedSize.toSize());
+    }
+}
+
+void pyramid::switchViewMode()
+{
+    mode = (mode + 1) % 2;
+    openedImages[filesBox->currentIndex()]->setOpVector(mode);
+    imageWdg->resize(openedImages[filesBox->currentIndex()]->getImgSize());
+    this->updateLayersBox();
+}
+
 // Единственное действие, которое используется в верхнем меню.
 // Слот вызывает файловый менеджер для открытия файлов с изображениями.
 // После открытия - проверяет пути на валидность и добавляет файл в ComboBox filesBox, попутно его отсортировав и проверив на дупликаты.
@@ -458,10 +489,7 @@ void pyramid::updateLayers(int id) // СЛОТ |================================
     static QPixmap *generatedImage;
     if(generatedImage != nullptr) delete generatedImage;
     generatedImage = new QPixmap(*(openedImages[filesBox->currentIndex()]->getImage(0)));
-    QSizeF multipliedSize = openedImages[filesBox->currentIndex()]->getLayerSize(id);
-    QSize originalSize = openedImages[filesBox->currentIndex()]->getImgSize();
-    *generatedImage = generatedImage->scaled(multipliedSize.toSize(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-    *generatedImage = generatedImage->scaled(originalSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    this->transformByMode(mode, generatedImage, id);
     this->setSizeTip(openedImages[filesBox->currentIndex()]->getImgSizeTip(id));
     this->calculateRecommend(multiplier->value());
     img->setBrush(imageWdg->backgroundRole(), QBrush(*generatedImage));
