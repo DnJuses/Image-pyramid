@@ -92,7 +92,7 @@ bool PyramidPixmap::createLayers(int amount, double multiplier)
 }
 
 // Получение переменной imageSize, переведенной в QString для более простого использования в QLabel.
-QString PyramidPixmap::getImgSizeTip()
+QString PyramidPixmap::getImgSizeTip(int i)
 {
-    return QString::number(imageLayers[0].layerImage->width()) + "x" + QString::number(imageLayers[0].layerImage->height());
+    return QString::number(imageLayers[i].layerSize.toSize().width()) + "x" + QString::number(imageLayers[i].layerSize.toSize().height());
 }

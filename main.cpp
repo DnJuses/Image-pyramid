@@ -9,12 +9,67 @@
 
 int main(int argc, char *argv[])
 {
+    // Удаляем любые неизвестные опции
+    for(int i = 1, j = 0; i < argc; i++)
+    {
+
+        // Если опцией идет --help или --version = пропускаем
+        if(strcmp(argv[i], "--help") == 0 ||
+               strcmp(argv[i], "-h") == 0 ||
+               strcmp(argv[i], "-?") == 0 ||
+               strcmp(argv[i], "-v") == 0 ||
+               strcmp(argv[i], "--version") == 0)
+        {
+            continue;
+        }
+        // Если последней опцией идет -f = удаляем ее.
+        if(i == argc - 1 &&
+           strcmp(argv[i], "-f") == 0)
+        {
+           argv[i] = "";
+        }
+        // Если следующим должно идти свойство опции.
+        else if(j == 1)
+        {
+            // Если это свойство и есть опция
+            if(argv[i][0] == '-')
+            {
+                // Если перед этим свойством шел -f - ставим обозначение, что пути к файлу нет.
+                if(strcmp(argv[i - 1], "-f") == 0)
+                {
+                    argv[i] = "No path";
+                }
+                // Иначе удаляем это свойство
+                else
+                {
+                    argv[i] = "";
+                }
+            }
+            j = 0;
+            continue;
+        }
+        // Если эта опция - не опция, определенная в программе, удаляем ее.
+        else if(strcmp(argv[i], "-f") != 0 &&
+           strcmp(argv[i], "-a") != 0 &&
+           strcmp(argv[i], "-m") != 0
+               )
+        {
+            argv[i] = "";
+            continue;
+        }
+        // Иначе это опция программы и следующим должно идти ее свойство.
+        j = 1;
+    }
+    for(int i = 1; i < argc; i++)
+    {
+        std::cout << argv[i] << std::endl;
+    }
     QApplication a(argc, argv);
     pyramid w;
     w.setWindowTitle("Image pyramid");
     w.show();
     QCommandLineParser parser;
-    parser.setApplicationDescription("");
+    parser.setApplicationDescription("Image pyramid");
     parser.addHelpOption();
     parser.addVersionOption();
     parser.addPositionalArgument("file", QCoreApplication::translate("main", "(String) Path to the image file."));
@@ -22,21 +77,20 @@ int main(int argc, char *argv[])
     parser.addPositionalArgument("multiplier", QCoreApplication::translate("main", "(Float) Layers multiplier."));
 
     // Опция, с помощью которой передается путь к изображению.
-    QCommandLineOption passFileOption(QStringList() << "f" << "file",
+    QCommandLineOption passFileOption(QStringList() << "f",
     QCoreApplication::translate("main", "Passes an image file <file> into program."),
     QCoreApplication::translate("main", "file"));
     parser.addOption(passFileOption);
     // Опция, с помощью которой передается количество создаваемых слоев.
-    QCommandLineOption setAmountOption(QStringList() << "a" << "amount",
+    QCommandLineOption setAmountOption(QStringList() << "a",
     QCoreApplication::translate("main", "Sets amount <amount> of layers needed to create."),
     QCoreApplication::translate("main", "amount"));
     parser.addOption(setAmountOption);
     // Опция, с помощью которой передается множитель уменьшения изображений.
-    QCommandLineOption setMultiplierOption(QStringList() << "m" << "multiplier",
+    QCommandLineOption setMultiplierOption(QStringList() << "m",
     QCoreApplication::translate("main", "Sets multiplier <multiplier> for layers."),
     QCoreApplication::translate("main", "multiplier"));
     parser.addOption(setMultiplierOption);
-
 
     parser.process(a);
     QStringList passedFiles = parser.values(passFileOption);

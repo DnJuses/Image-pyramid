@@ -274,11 +274,11 @@ void pyramid::sortAndRefill()
         // Обрезаем полный путь файла, оставляя только его имя, формат и размер в пикселах.
         if(pos != -1)
         {
-            filesBox->addItem(openedImages[i]->getPath().remove(0, pos + 1) + "   " + openedImages[i]->getImgSizeTip());
+            filesBox->addItem(openedImages[i]->getPath().remove(0, pos + 1) + "   " + openedImages[i]->getImgSizeTip(0));
         }
         else
         {
-            filesBox->addItem(openedImages[i]->getPath() + "   " + openedImages[i]->getImgSizeTip());
+            filesBox->addItem(openedImages[i]->getPath() + "   " + openedImages[i]->getImgSizeTip(0));
         }
     }
     // Устанавливаем к просмотру только что открытый файл.
@@ -294,7 +294,7 @@ void pyramid::updateLayersBox()
     int id = filesBox->currentIndex();
     for(int i = 0; i < openedImages[id]->getVectorSize(); i++)
     {
-        layersBox->addItem(openedImages[id]->getLayerName(i));
+        layersBox->addItem(openedImages[id]->getLayerName(i) + "                                                  " + openedImages[id]->getImgSizeTip(i));
     }
 }
 
@@ -445,7 +445,7 @@ bool pyramid::openImage() // СЛОТ |=========================================
 // Слот обновляет imageWdg и sizeTip после смены файла.
 void pyramid::updateStats(int id) // СЛОТ |==================================================================|
 {
-    this->setSizeTip(openedImages[id]->getImgSizeTip());
+    this->setSizeTip(openedImages[id]->getImgSizeTip(0));
     img->setBrush(imageWdg->backgroundRole(), QBrush(*(openedImages[id]->getImage(0))));
     imageWdg->resize(openedImages[id]->getImgSize());
     imageWdg->setPalette(*img);
@@ -462,6 +462,7 @@ void pyramid::updateLayers(int id) // СЛОТ |================================
     QSize originalSize = openedImages[filesBox->currentIndex()]->getImgSize();
     *generatedImage = generatedImage->scaled(multipliedSize.toSize(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     *generatedImage = generatedImage->scaled(originalSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    this->setSizeTip(openedImages[filesBox->currentIndex()]->getImgSizeTip(id));
     this->calculateRecommend(multiplier->value());
     img->setBrush(imageWdg->backgroundRole(), QBrush(*generatedImage));
 

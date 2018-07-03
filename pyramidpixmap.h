@@ -18,7 +18,7 @@ public:
     PyramidPixmap(QString imagePath);
     PyramidPixmap(const PyramidPixmap &copy);
     bool isLoaded(); // Получение переменной loaded.
-    QString getImgSizeTip(); // Получение переменной imageSize, переведенной в QString для более простого использования в QLabel.
+    QString getImgSizeTip(int i); // Получение переменной imageSize, переведенной в QString для более простого использования в QLabel.
     QSize getImgSize(); // Получение переменной imageSize.
     QSizeF getLayerSize(int i); // Получение переменной layerSize из структуры Layer.
     QString getPath(); // Получение переменной path.
