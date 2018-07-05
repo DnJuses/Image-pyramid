@@ -303,6 +303,7 @@ void pyramid::updateLayersBox()
     {
         layersBox->addItem(openedImages[id]->getLayerName(i) + "                                                  " + openedImages[id]->getImgSizeTip(i));
     }
+    this->calculateRecommend(multiplier->value());
 }
 
 // Используется только при консольном вводе.
