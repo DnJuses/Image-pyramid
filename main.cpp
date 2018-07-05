@@ -9,11 +9,11 @@
 
 int main(int argc, char *argv[])
 {
-    // Удаляем любые неизвестные опции
+    // Удаляем любые неизвестные и невалидные опции.
     for(int i = 1, j = 0; i < argc; i++)
     {
 
-        // Если опцией идет --help или --version = пропускаем
+        // Если опцией идет --help или --version или -s = пропускаем
         if(strcmp(argv[i], "--help") == 0 ||
                strcmp(argv[i], "-h") == 0 ||
                strcmp(argv[i], "-?") == 0 ||
@@ -210,10 +210,12 @@ int main(int argc, char *argv[])
                 }
             }
         }
+        // Оповещаем пользователя об успешном прохождении всех проверок и преобразований.
         QMessageBox checksSuccess;
         checksSuccess.setWindowTitle("Argument passing");
         checksSuccess.setText("All checks passed!");
         checksSuccess.exec();
+        // Передаем все переданные через консоль аргументы в конструктор приложения.
         w.openImagesFromList(passedFiles, passedAmounts, passedMultipliers, passedSwitch);
     }
     return a.exec();

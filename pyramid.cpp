@@ -14,17 +14,17 @@ pyramid::pyramid(QWidget *parent) : QMainWindow(parent)
     this->setFixedSize(518, 594); // Оптимальный размер основного окна
     this->createAll();
 
-    /* Все connect'ы приложения и их расположение по функциям:
-     * connect(filesBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateStats(int))); (createFilesBox:75)
-     * connect(layersBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateLayers(int))); (createLayersBox:85)
-     * connect(spawnLayers, SIGNAL(clicked()), this, SLOT(startLayersCreation())); (createSpawnerButton:114)
-     * connect(multiplier, SIGNAL(valueChanged(double)), this, SLOT(calculateRecommend(double))); (createMultiplier:126)
-     * connect(openFile, QAction::triggered, this, pyramid::openImage); (createMenu:173)
-     * connect(switchMode, QAction::triggered, this, pyramid::switchViewMode); (createMenu:)
+    /* Все connect'ы приложения и их расположение (функция:строка):
+     * connect(filesBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateStats(int))); (createFilesBox:76)
+     * connect(layersBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateLayers(int))); (createLayersBox:86)
+     * connect(spawnLayers, SIGNAL(clicked()), this, SLOT(startLayersCreation())); (createSpawnerButton:115)
+     * connect(multiplier, SIGNAL(valueChanged(double)), this, SLOT(calculateRecommend(double))); (createMultiplier:128)
+     * connect(openFile, QAction::triggered, this, pyramid::openImage); (createMenu:177)
+     * connect(switchMode, QAction::triggered, this, pyramid::switchViewMode); (createMenu:183)
      */
 }
 
-// Создает виджет, который будет содержать в себе все layout'ы и будет центральный виджетом основного окна.
+// Создает виджет, который будет содержать в себе все layout'ы и будет центральным виджетом основного окна.
 QWidget *pyramid::createCentral()
 {
     centralWidget = new QWidget(this);
@@ -32,7 +32,7 @@ QWidget *pyramid::createCentral()
     return centralWidget;
 }
 
-// Создает центральный layout, который содержит в себе все виджеты и другие лэйауты программы.
+// Создает центральный layout, который содержит в себе все виджеты и другие layout'ы программы.
 // Крепится к centralWidget
 QVBoxLayout *pyramid::createCLayout()
 {
@@ -78,7 +78,7 @@ QComboBox *pyramid::createFilesBox()
 }
 
 // Создает ComboBox, который хранит в себе все слои изображения.
-// Получает слои из вектора imageLayers, который находится в PyramidPixmap. Доступ осуществляется через вектор openedImages.
+// Получает слои из вектора imageLayers, который находится в классе PyramidPixmap. Доступ осуществляется через вектор openedImages.
 // Располагается в layout'е boxLayout.
 QComboBox *pyramid::createLayersBox()
 {
@@ -116,7 +116,7 @@ QPushButton *pyramid::createSpawnerButton()
     return spawnLayers;
 }
 
-// Создает DoubleSpinBox, который устанавливает значение уменьшения для изображения.
+// Создает DoubleSpinBox, который устанавливает коэффициент для уменьшения изображения.
 // Располагается в layout'е lowerEnd.
 QDoubleSpinBox *pyramid::createMultiplier()
 {
@@ -140,7 +140,7 @@ QSpinBox *pyramid::createLayersAmount()
     return layersAmount;
 }
 
-// Создает Label с рекомендациями по количеству создаваемых слоев.
+// Создает Label, подсказывающий максимальное количество создаваемых с текущим коэффициентом слоев.
 // Располагается в layout'е lowerEnd.
 QLabel *pyramid::createRecommendTip()
 {
@@ -149,7 +149,7 @@ QLabel *pyramid::createRecommendTip()
 }
 
 // Создает нижний layout, где располагаются кнопка создания слоев, все спинбоксы и подсказки к ним.
-// Также содержит в себе label с рекомендациями по количеству создаваемых слоев.
+// Также содержит в себе label подсказывающий максимальное количество создаваемых с текущим коэффициентом слоев.
 QHBoxLayout *pyramid::createLowerEnd()
 {
     multiplierTip = new QLabel(tr("Multiplier:"), centralWidget);
@@ -166,7 +166,9 @@ QHBoxLayout *pyramid::createLowerEnd()
     return lowerEnd;
 }
 
-// Создает верхнее меню, которое содержит в себе только одно действие - открытие файла с изображением.
+// Создает меню-бар со следующими вкладками:
+// File - содержит в себе действие по открытию изображений.
+// View - содержит в себе действие по смене режима отображения.
 void pyramid::createMenu()
 {
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
@@ -182,7 +184,7 @@ void pyramid::createMenu()
     viewMenu->addAction(switchMode);
 }
 
-// Создает меню и устанавливает центральный виджет.
+// Создает весь интерфейс изображения.
 void pyramid::createAll()
 {
     this->createMenu();
@@ -198,7 +200,7 @@ void pyramid::setSizeTip(QString imageSize)
 // Слот подсчитывает максимально возможное к созданию количество слоев.
 void pyramid::calculateRecommend(double mult)  // СЛОТ |==================================================================|
 {
-    if(filesBox->count() == 0 || mult == 0) return; // Нет ниодного открытого изображения или аргумент невалидный.
+    if(filesBox->count() == 0 || mult == 0) return; // Нет открытых изображений или множитель - это 0
     // Получение размеров последнего слоя текущего изображения.
     QSizeF lastLayerSize = openedImages[filesBox->currentIndex()]->getLayerSize(layersBox->count() - 1);
     // Получение размеров текущего изображения.
@@ -233,11 +235,11 @@ void pyramid::calculateRecommend(double mult)  // СЛОТ |====================
 // Если дупликат найден - оповещает об этом пользователя и дает ему выбор - открывать файл или не открывать его.
 bool pyramid::isDuplicate(QString checkPath)
 {
-    // От полного пути оставляем только название файла и его формат
+    // От полного пути файла оставляем только название файла и его формат
     checkPath = checkPath.remove(0, (checkPath.lastIndexOf(QRegExp("[\\\\/]"))) + 1);
     for(int i = 0; i < openedImages.size(); i++)
     {
-        // От полного пути оставляем только название файла и его формат
+        // От полного пути файла оставляем только название файла и его формат
         QString dupePath = openedImages[i]->getPath().remove(0, (openedImages[i]->getPath().lastIndexOf(QRegExp("[\\\\/]"))) + 1);
         if(checkPath == dupePath)
         {
@@ -271,7 +273,7 @@ void pyramid::sortAndRefill()
     }
     // Очистка и перезаполнение бокса
     filesBox->blockSignals(true);
-    // Метод очистки комбобокса дважды посылает сигнал, из-за чего слот updateStats получает невалидные значения и программа крашится
+    // Метод очистки комбобокса дважды посылает сигнал, из-за чего слот updateStats получает невалидные значения (а именно -1 и 0) и программа крашится.
     // Поэтому на время очистки отключаем отсылку сигналов данным виджетом.
     filesBox->clear();
     filesBox->blockSignals(false);
@@ -292,7 +294,7 @@ void pyramid::sortAndRefill()
     filesBox->setCurrentIndex(lastId);
 }
 
-// Слот обновляет содержимое ComboBox'а layersBox, выводя новые изменения.
+// Функция обновляет содержимое ComboBox'а layersBox, выводя новые изменения.
 void pyramid::updateLayersBox()
 {
     layersBox->blockSignals(true);
@@ -308,7 +310,7 @@ void pyramid::updateLayersBox()
 
 // Используется только при консольном вводе.
 // Функция открывает файлы с поступившего в него в качестве аргумента fileList, попутно проверяя пути на валидность.
-// После успешного открытия, создает указанное в amountList количество слоев с множителем в multiplierList.
+// После успешного открытия, создает указанное в amountList количество слоев с множителем в multiplierList в режиме switcher.
 void pyramid::openImagesFromList(QStringList fileList, QStringList amountList, QStringList multiplierList, bool switcher)
 {
     for(int i = 0; i < fileList.length(); i++)
@@ -401,10 +403,10 @@ bool pyramid::startLayersCreation() // СЛОТ |===============================
     return true;
 }
 
-// Слот создает слои в зависимости от режима, в котором сейчас находится программа.
+// Функция создает слои в зависимости от режима, в котором сейчас находится программа.
 // 1-ый - изменяет размер изображения, затем возвращает его в оригинальное состояние. Получается эффект "размыливания"
 // 2-ой - изменяет размер изображения, делая его меньше или больше оригинала.
-void pyramid::transformByMode(int mode, QPixmap *image, int id) // СЛОТ |=====================================================|
+void pyramid::transformByMode(int mode, QPixmap *image, int id)
 {
     QSizeF multipliedSize = openedImages[filesBox->currentIndex()]->getLayerSize(id);
     QSize originalSize = openedImages[filesBox->currentIndex()]->getImgSize();
@@ -420,8 +422,9 @@ void pyramid::transformByMode(int mode, QPixmap *image, int id) // СЛОТ |===
     }
 }
 
-// Переключает режим программы.
-// За переключение отвечает switchMode.
+// Действие, которое используется в меню-баре
+// Слот переключает режим отображения программы.
+// За переключение отвечает действие switchMode.
 void pyramid::switchViewMode(bool mode) // СЛОТ |=====================================================|
 {
     if(filesBox->count() > 0)
@@ -439,9 +442,9 @@ void pyramid::switchViewMode(bool mode) // СЛОТ |===========================
     }
 }
 
-// Единственное действие, которое используется в верхнем меню.
+// Действие, которое используется в меню-баре.
 // Слот вызывает файловый менеджер для открытия файлов с изображениями.
-// После открытия - проверяет пути на валидность и добавляет файл в ComboBox filesBox, попутно его отсортировав и проверив на дупликаты.
+// После открытия - проверяет путь на валидность и добавляет файл в ComboBox filesBox, попутно его отсортировав и проверив на дупликаты.
 // В случае неудачи - оповещает пользователя о невозможности открытия файла.
 bool pyramid::openImage() // СЛОТ |==================================================================|
 {
