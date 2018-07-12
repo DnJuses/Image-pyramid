@@ -192,7 +192,7 @@ void pyramid::createAll()
 }
 
 // Функция устанавливает размер изображения в виде QString в label sizeTip.
-void pyramid::setSizeTip(QString imageSize)
+void pyramid::setSizeTip(const QString &imageSize)
 {
     sizeTip->setText("Size: " + imageSize);
 }
@@ -311,14 +311,14 @@ void pyramid::updateLayersBox()
 // Используется только при консольном вводе.
 // Функция открывает файлы с поступившего в него в качестве аргумента fileList, попутно проверяя пути на валидность.
 // После успешного открытия, создает указанное в amountList количество слоев с множителем в multiplierList в режиме switcher.
-void pyramid::openImagesFromList(QStringList fileList, QStringList amountList, QStringList multiplierList, bool switcher)
+void pyramid::openImagesFromList(const QStringList &fileList, const QStringList &amountList, const QStringList &multiplierList, bool switcher)
 {
     for(int i = 0; i < fileList.length(); i++)
     {
 
-       QString filePath = fileList.at(i);
-       int createAmount = QString(amountList.at(i)).toInt();
-       double multi = QString(multiplierList.at(i)).toDouble();
+       const QString filePath = fileList.at(i);
+       const int createAmount = QString(amountList.at(i)).toInt();
+       const double multi = QString(multiplierList.at(i)).toDouble();
        // Проверка пути на валидность.
        if(filePath.endsWith(".png") || filePath.endsWith(".jpg"))
        {
@@ -381,32 +381,27 @@ bool pyramid::startLayersCreation() // СЛОТ |===============================
                                      QMessageBox::No);
                 if(conf == QMessageBox::No)
                 {
-                    return true;
+                    return false;
                 }
     }
     // Создаем слои функцией createLayers из класса PyramidPixmap.
-    if(openedImages[filesBox->currentIndex()]->createLayers(layersAmount->value(), multiplier->value()))
-    {
-        // Обновляем бокс со слоями.
-        this->updateLayersBox();
-        recommendTip->setText("Max layers possible: " + QString::number(tipNum < layersAmount->value() ?
-                                                                                     0 :
-                                                                                     tipNum - layersAmount->value()));
-        QMessageBox createSuccess;
-        createSuccess.setWindowTitle("Layer creation");
-        createSuccess.setText(QString::number(layersAmount->value()) + " layers created succesfully!");
-        createSuccess.exec();
-        return true;
-    }
-
-
+    openedImages[filesBox->currentIndex()]->createLayers(layersAmount->value(), multiplier->value());
+    // Обновляем бокс со слоями.
+    this->updateLayersBox();
+    recommendTip->setText("Max layers possible: " + QString::number(tipNum < layersAmount->value() ?
+                                                                                 0 :
+                                                                                 tipNum - layersAmount->value()));
+    QMessageBox createSuccess;
+    createSuccess.setWindowTitle("Layer creation");
+    createSuccess.setText(QString::number(layersAmount->value()) + " layers created succesfully!");
+    createSuccess.exec();
     return true;
 }
 
 // Функция создает слои в зависимости от режима, в котором сейчас находится программа.
 // 1-ый - изменяет размер изображения, затем возвращает его в оригинальное состояние. Получается эффект "размыливания"
 // 2-ой - изменяет размер изображения, делая его меньше или больше оригинала.
-void pyramid::transformByMode(int mode, QPixmap *image, int id)
+void pyramid::transformByMode(bool mode, QPixmap *image, size_t id)
 {
     QSizeF multipliedSize = openedImages[filesBox->currentIndex()]->getLayerSize(id);
     QSize originalSize = openedImages[filesBox->currentIndex()]->getImgSize();
@@ -448,7 +443,7 @@ void pyramid::switchViewMode(bool mode) // СЛОТ |===========================
 // В случае неудачи - оповещает пользователя о невозможности открытия файла.
 bool pyramid::openImage() // СЛОТ |==================================================================|
 {
-    QString openFilePath = QFileDialog::getOpenFileName(nullptr, nullptr, nullptr, tr("Any files (*.*);;Image files (*.jpg *.png)"));
+    const QString openFilePath = QFileDialog::getOpenFileName(nullptr, nullptr, nullptr, tr("Any files (*.*);;Image files (*.jpg *.png)"));
     if(openFilePath == "") return true; // Пользователь закрыл файловый диалог и не выбрал файл.
     // Проверка на соответствие формата файла.
     if(!openFilePath.endsWith(".jpg") && !openFilePath.endsWith(".png"))

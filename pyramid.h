@@ -23,8 +23,8 @@ public:
     explicit pyramid(QWidget *parent = nullptr);
     // Используется только при консольном вводе.
     // Функция открывает файлы с поступившего в него в качестве аргумента fileList, попутно проверяя пути на валидность.
-    // После успешного открытия, создает указанное в amountList количество слоев с множителем в multiplierList.
-    void openImagesFromList(QStringList fileList, QStringList amountList, QStringList multiplierList, bool switcher);
+    // После успешного открытия, создает указанное в amountList количество слоев с множителем в multiplierList в режиме switcher.
+    void openImagesFromList(const QStringList &fileList, const QStringList &amountList, const QStringList &multiplierList, bool switcher);
 private:
 
     QVector<PyramidPixmap*> openedImages;
@@ -46,10 +46,10 @@ private:
                                              void createAll();
 
     // Функция устанавливает размер изображения в виде QString в label sizeTip.
-    void setSizeTip(QString imageSize);
+    void setSizeTip(const QString &imageSize);
     // Функция проверяет открываемые файлы на дупликаты.
     // Если дупликат найден - оповещает об этом пользователя и дает ему выбор - открывать файл или не открывать его.
-    bool isDuplicate(QString checkPath);
+    bool isDuplicate(QString checkPath); // На устранение недочетов
     // Сортирует файлы в ComboBox'е filesBox.
     // Тип сортировки - сортировка вставками с перебором каждого элемента.
     void sortAndRefill();
@@ -58,7 +58,7 @@ private:
     // Функция создает слои в зависимости от режима, в котором сейчас находится программа.
     // 1-ый - изменяет размер изображения, затем возвращает его в оригинальное состояние. Получается эффект "размыливания"
     // 2-ой - изменяет размер изображения, делая его меньше или больше оригинала.
-    void transformByMode(int mode, QPixmap *image, int id);
+    void transformByMode(bool mode, QPixmap *image, size_t id);
 private slots:
     // Слот подсчитывает максимально возможное к созданию количество слоев.
     void calculateRecommend(double mult);

@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     for(int i = 1, j = 0; i < argc; i++)
     {
 
-        // Если опцией идет --help или --version или -s = пропускаем
+        // Если опцией идет --help или --version или -s = пропускаем.
         if(strcmp(argv[i], "--help") == 0 ||
                strcmp(argv[i], "-h") == 0 ||
                strcmp(argv[i], "-?") == 0 ||
@@ -144,13 +144,13 @@ int main(int argc, char *argv[])
                elemsDeleted.exec();
            }
         }
-        // Проверка на количество переданных "количественных" аргументов
+        // Проверка на количество переданных "количественных" аргументов.
         if(passedAmounts.length() != passedFiles.length())
         {
             int aLen = passedAmounts.length(),
             fLen = passedFiles.length();
-            // Аргументов меньше чем файлов - добавляем fLen - aLen стандартных аргументов
-            // Стандартный аргумент - 3
+            // Аргументов меньше чем файлов - добавляем (fLen - aLen) стандартных аргументов.
+            // Стандартный аргумент = 3.
             if(aLen < fLen)
             {
                 QMessageBox NE;
@@ -163,7 +163,7 @@ int main(int argc, char *argv[])
                    passedAmounts.push_back("3");
                 }
             }
-            // Аргументов больше чем файлов - удаляем aLen - fLen последних аргументов
+            // Аргументов больше чем файлов - удаляем (aLen - fLen) последних аргументов.
             else
             {
                 QMessageBox tooMany;
@@ -177,12 +177,12 @@ int main(int argc, char *argv[])
                 }
             }
         }
-        // Проверка на количеcтво переданных "множительных" аргументов
+        // Проверка на количеcтво переданных "множительных" аргументов.
         if(passedMultipliers.length() != passedFiles.length())
         {
             int mLen = passedMultipliers.length(),
                 fLen = passedFiles.length();
-            // Аргументов меньше чем файлов - добавляем fLen - mLen стандартных аргументов
+            // Аргументов меньше чем файлов - добавляем fLen - mLen стандартных аргументов.
             // Стандартный аргумент - 2
             if(mLen < fLen)
             {
@@ -196,7 +196,7 @@ int main(int argc, char *argv[])
                     passedMultipliers.push_back("2");
                 }
             }
-            // Аргументов больше чем файлов - удаляем mLen - fLen последних аргументов
+            // Аргументов больше чем файлов - удаляем mLen - fLen последних аргументов.
             else
             {
                 QMessageBox tooMany;

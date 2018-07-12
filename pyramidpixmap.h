@@ -15,24 +15,24 @@ struct Layer
 class PyramidPixmap
 {
 public:
-    PyramidPixmap(QString imagePath);
+    PyramidPixmap(const QString &imagePath);
     PyramidPixmap(const PyramidPixmap &copy);
-    bool isLoaded(); // Получение переменной loaded.
-    QString getImgSizeTip(int i); // Получение переменной imageSize, переведенной в QString для более простого использования в QLabel.
-    QSize getImgSize(); // Получение переменной imageSize.
-    QSizeF getLayerSize(int i); // Получение переменной layerSize из структуры Layer.
-    QString getPath(); // Получение переменной path.
-    double getDiag(); // Получение переменной diag.
-    void setOpVector(int num); // Дает указателю на векторы новый вектор.
-    QPixmap *getImage(int i); // Получение переменной layerImage из структуры Layer.
-    long double getMult(int i); // Получение переменной multiplication из структуры Layer.
-    QString getLayerName(int i); // Получение переменной layerName из структуры Layer.
-    int getVectorSize(); // Получение размера вектора imageLayers.
+    bool isLoaded() const; // Получение переменной loaded.
+    QString getImgSizeTip(size_t i) const; // Получение переменной imageSize, переведенной в QString для более простого использования в QLabel.
+    QSize getImgSize() const; // Получение переменной imageSize.
+    QSizeF getLayerSize(size_t i) const; // Получение переменной layerSize из структуры Layer.
+    QString getPath() const; // Получение переменной path.
+    double getDiag() const; // Получение переменной diag.
+    QPixmap *getImage(size_t i) const; // Получение переменной layerImage из структуры Layer.
+    long double getMult(size_t i) const; // Получение переменной multiplication из структуры Layer.
+    QString getLayerName(size_t i) const; // Получение переменной layerName из структуры Layer.
+    int getVectorSize() const; // Получение размера вектора imageLayers.
+    void setOpVector(bool mode); // Дает указателю на векторы новый вектор.
     // Функция создает указатели на изображения и данные о множителе, размере и имени
     // Позже указатели будут в слоте updateLayers из класса pyramid преобразовываться в обычные изображения.
     // В результате такого подхода существенно экономится память, а также увеличивается скорость генерации слоев.
     // Из минусов можно выделить только более долгое время получения доступа к слою (мгновенно->0.5 сек).
-    bool createLayers(int amount, double multiplier);
+    void createLayers(int amount, double multiplier);
 private:
     QVector<Layer> *manipulatingVector; // Указатель на векторы. С его помощью идет манипулирование двумя другими векторами.
     QVector<Layer> imageLayers; // Хранит слои с изображением и его название с размером 1-ого режима отображения.
