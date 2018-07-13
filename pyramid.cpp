@@ -15,12 +15,12 @@ pyramid::pyramid(QWidget *parent) : QMainWindow(parent)
     this->createAll();
 
     /* Все connect'ы приложения и их расположение (функция:строка):
-     * connect(filesBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateStats(int))); (createFilesBox:76)
-     * connect(layersBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateLayers(int))); (createLayersBox:86)
-     * connect(spawnLayers, SIGNAL(clicked()), this, SLOT(startLayersCreation())); (createSpawnerButton:115)
-     * connect(multiplier, SIGNAL(valueChanged(double)), this, SLOT(calculateRecommend(double))); (createMultiplier:128)
-     * connect(openFile, QAction::triggered, this, pyramid::openImage); (createMenu:177)
-     * connect(switchMode, QAction::triggered, this, pyramid::switchViewMode); (createMenu:183)
+     * connect(filesBox,  static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &pyramid::updateStats); (createFilesBox:76)
+     * connect(layersBox,  static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &pyramid::updateLayers); (createLayersBox:86)
+     * connect(spawnLayers, &QPushButton::clicked, this, &pyramid::startLayersCreation); (createSpawnerButton:115)
+     * connect(multiplier, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &pyramid::calculateRecommend); (createMultiplier:128)
+     * connect(openFile, &QAction::triggered, this, &pyramid::openImage); (createMenu:177)
+     * connect(switchMode, &QAction::triggered, this, &pyramid::switchViewMode); (createMenu:183)
      */
 }
 
@@ -73,7 +73,7 @@ QComboBox *pyramid::createFilesBox()
 {
     filesBox = new QComboBox(centralWidget);
     filesBox->setMinimumWidth(135);
-    connect(filesBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateStats(int)));
+    connect(filesBox,  static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &pyramid::updateStats);
     return filesBox;
 }
 
@@ -83,7 +83,7 @@ QComboBox *pyramid::createFilesBox()
 QComboBox *pyramid::createLayersBox()
 {
     layersBox = new QComboBox(centralWidget);
-    connect(layersBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateLayers(int)));
+    connect(layersBox,  static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &pyramid::updateLayers);
     return layersBox;
 }
 
@@ -112,7 +112,7 @@ QHBoxLayout *pyramid::createBoxLay()
 QPushButton *pyramid::createSpawnerButton()
 {
     spawnLayers = new QPushButton(tr("Create layers"), centralWidget);
-    connect(spawnLayers, SIGNAL(clicked()), this, SLOT(startLayersCreation()));
+    connect(spawnLayers, &QPushButton::clicked, this, &pyramid::startLayersCreation);
     return spawnLayers;
 }
 
@@ -125,7 +125,7 @@ QDoubleSpinBox *pyramid::createMultiplier()
     multiplier->setSingleStep(0.01);
     multiplier->setMinimum(0.01);
     multiplier->setMaximum(99);
-    connect(multiplier, SIGNAL(valueChanged(double)), this, SLOT(calculateRecommend(double)));
+    connect(multiplier, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &pyramid::calculateRecommend);
     return multiplier;
 }
 
@@ -174,13 +174,13 @@ void pyramid::createMenu()
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
     openFile = new QAction(tr("&Open image"), this);
     openFile->setShortcuts(QKeySequence::Open);
-    connect(openFile, QAction::triggered, this, pyramid::openImage);
+    connect(openFile, &QAction::triggered, this, &pyramid::openImage);
     fileMenu->addAction(openFile);
     QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
     switchMode = new QAction(tr("&Switch view mode"));
     switchMode->setCheckable(true);
     switchMode->setChecked(0);
-    connect(switchMode, SIGNAL(triggered(bool)), this, SLOT(switchViewMode(bool)));
+    connect(switchMode, &QAction::triggered, this, &pyramid::switchViewMode);
     viewMenu->addAction(switchMode);
 }
 
@@ -204,7 +204,7 @@ void pyramid::calculateRecommend(double mult)  // СЛОТ |====================
     // Получение размеров последнего слоя текущего изображения.
     QSizeF lastLayerSize = openedImages[filesBox->currentIndex()]->getLayerSize(layersBox->count() - 1);
     // Получение размеров текущего изображения.
-    QSize originalSize = openedImages[filesBox->currentIndex()]->getImgSize();
+    const QSize originalSize = openedImages[filesBox->currentIndex()]->getImgSize();
     int i = 0;
     for(i; ; i++)
     {
@@ -237,8 +237,8 @@ bool pyramid::isDuplicate(const QFileInfo &checkPath)
 {
     for(int i = 0; i < openedImages.size(); i++)
     {
-        // От полного пути файла оставляем только название файла и его формат
         const QFileInfo dupePath(openedImages[i]->getPath());
+        // От полного пути файла оставляем только название файла и его формат. Потом сравниваем.
         if(checkPath.fileName() == dupePath.fileName())
         {
             return true;
@@ -394,8 +394,8 @@ bool pyramid::startLayersCreation() // СЛОТ |===============================
 // 2-ой - изменяет размер изображения, делая его меньше или больше оригинала.
 void pyramid::transformByMode(bool mode, QPixmap *image, size_t id)
 {
-    QSizeF multipliedSize = openedImages[filesBox->currentIndex()]->getLayerSize(id);
-    QSize originalSize = openedImages[filesBox->currentIndex()]->getImgSize();
+    const QSizeF multipliedSize = openedImages[filesBox->currentIndex()]->getLayerSize(id);
+    const QSize originalSize = openedImages[filesBox->currentIndex()]->getImgSize();
     if(mode == 0)
     {
         *image = image->scaled(multipliedSize.toSize(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
@@ -485,7 +485,7 @@ bool pyramid::openImage() // СЛОТ |=========================================
 }
 
 // Слот обновляет imageWdg и sizeTip после смены файла.
-void pyramid::updateStats(int id) // СЛОТ |==================================================================|
+void pyramid::updateStats(size_t id) // СЛОТ |==================================================================|
 {
     this->setSizeTip(openedImages[id]->getImgSizeTip(0));
     img->setBrush(imageWdg->backgroundRole(), QBrush(*(openedImages[id]->getImage(0))));
@@ -495,7 +495,7 @@ void pyramid::updateStats(int id) // СЛОТ |=================================
 }
 
 // Слот обновляет imageWdg и sizeTip после смены слоя.
-void pyramid::updateLayers(int id) // СЛОТ |==================================================================|
+void pyramid::updateLayers(size_t id) // СЛОТ |==================================================================|
 {
     static QPixmap *generatedImage;
     if(generatedImage != nullptr) delete generatedImage;

@@ -78,9 +78,9 @@ private slots:
     // В случае неудачи - оповещает пользователя о невозможности открытия файла.
     bool openImage();
     // Слот обновляет imageWdg и sizeTip после смены файла.
-    void updateStats(int id);
+    void updateStats(size_t id);
     // Слот обновляет imageWdg и sizeTip после смены слоя.
-    void updateLayers(int id);
+    void updateLayers(size_t id);
 };
 
 #endif // PYRAMID_H
