@@ -12,6 +12,7 @@
 #include <QPalette>
 #include <QHBoxLayout>
 #include <QVector>
+#include <QFileInfo>
 #include <QDoubleSpinBox>
 #include <QSpinBox>
 #include "pyramidpixmap.h"
@@ -49,7 +50,7 @@ private:
     void setSizeTip(const QString &imageSize);
     // Функция проверяет открываемые файлы на дупликаты.
     // Если дупликат найден - оповещает об этом пользователя и дает ему выбор - открывать файл или не открывать его.
-    bool isDuplicate(QString checkPath); // На устранение недочетов
+    bool isDuplicate(const QFileInfo &checkPath); // На устранение недочетов
     // Сортирует файлы в ComboBox'е filesBox.
     // Тип сортировки - сортировка вставками с перебором каждого элемента.
     void sortAndRefill();

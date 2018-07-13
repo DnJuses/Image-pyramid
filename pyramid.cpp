@@ -233,15 +233,13 @@ void pyramid::calculateRecommend(double mult)  // СЛОТ |====================
 
 // Функция проверяет открываемые файлы на дупликаты.
 // Если дупликат найден - оповещает об этом пользователя и дает ему выбор - открывать файл или не открывать его.
-bool pyramid::isDuplicate(QString checkPath)
+bool pyramid::isDuplicate(const QFileInfo &checkPath)
 {
-    // От полного пути файла оставляем только название файла и его формат
-    checkPath = checkPath.remove(0, (checkPath.lastIndexOf(QRegExp("[\\\\/]"))) + 1);
     for(int i = 0; i < openedImages.size(); i++)
     {
         // От полного пути файла оставляем только название файла и его формат
-        QString dupePath = openedImages[i]->getPath().remove(0, (openedImages[i]->getPath().lastIndexOf(QRegExp("[\\\\/]"))) + 1);
-        if(checkPath == dupePath)
+        const QFileInfo dupePath(openedImages[i]->getPath());
+        if(checkPath.fileName() == dupePath.fileName())
         {
             return true;
         }
@@ -279,16 +277,9 @@ void pyramid::sortAndRefill()
     filesBox->blockSignals(false);
     for (int i = 0; i < openedImages.size(); i++)
     {
-        int pos = openedImages[i]->getPath().lastIndexOf(QRegExp("[\\\\/]"));
         // Обрезаем полный путь файла, оставляя только его имя, формат и размер в пикселах.
-        if(pos != -1)
-        {
-            filesBox->addItem(openedImages[i]->getPath().remove(0, pos + 1) + "   " + openedImages[i]->getImgSizeTip(0));
-        }
-        else
-        {
-            filesBox->addItem(openedImages[i]->getPath() + "   " + openedImages[i]->getImgSizeTip(0));
-        }
+        const QString imgFileName = QFileInfo(openedImages[i]->getPath()).fileName();
+        filesBox->addItem(imgFileName + "   " + openedImages[i]->getImgSizeTip(0));
     }
     // Устанавливаем к просмотру только что открытый файл.
     filesBox->setCurrentIndex(lastId);
