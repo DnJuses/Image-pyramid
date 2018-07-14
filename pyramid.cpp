@@ -13,7 +13,6 @@ pyramid::pyramid(QWidget *parent) : QMainWindow(parent)
 {
     this->setFixedSize(518, 594); // Оптимальный размер основного окна
     this->createAll();
-
     /* Все connect'ы приложения и их расположение (функция:строка):
      * connect(filesBox,  static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &pyramid::updateStats); (createFilesBox:76)
      * connect(layersBox,  static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &pyramid::updateLayers); (createLayersBox:86)
@@ -24,10 +23,25 @@ pyramid::pyramid(QWidget *parent) : QMainWindow(parent)
      */
 }
 
+pyramid::~pyramid()
+{
+    disconnect(filesBox,  static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &pyramid::updateStats);
+    disconnect(layersBox,  static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &pyramid::updateLayers);
+    disconnect(spawnLayers, &QPushButton::clicked, this, &pyramid::startLayersCreation);
+    disconnect(multiplier, static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged), this, &pyramid::calculateRecommend);
+    disconnect(openFile, &QAction::triggered, this, &pyramid::openImage);
+    disconnect(switchMode, &QAction::triggered, this, &pyramid::switchViewMode);
+    for(QVector<PyramidPixmap*>::iterator i = openedImages.begin(); i != openedImages.end(); i++)
+    {
+        delete *i;
+    }
+    this->deleteLater();
+}
+
 // Создает виджет, который будет содержать в себе все layout'ы и будет центральным виджетом основного окна.
 QWidget *pyramid::createCentral()
 {
-    centralWidget = new QWidget(this);
+    centralWidget = new QWidget;
     centralWidget->setLayout(this->createCLayout());
     return centralWidget;
 }
@@ -48,7 +62,7 @@ QVBoxLayout *pyramid::createCLayout()
 // Встроен в imageScroll, чтобы его можно было прокручивать.
 QWidget *pyramid::createImage()
 {
-    imageWdg = new QWidget(centralWidget);
+    imageWdg = new QWidget;
     img = new QPalette;
     imageWdg->setAutoFillBackground(true);
     return imageWdg;
@@ -58,7 +72,7 @@ QWidget *pyramid::createImage()
 // Прокручивает imageWdg.
 QScrollArea *pyramid::createScroll()
 {
-    QScrollArea *imageScroll = new QScrollArea(centralWidget);
+    QScrollArea *imageScroll = new QScrollArea;
     imageScroll->setFixedSize(500, 500);
     imageScroll->setAlignment(Qt::AlignCenter);
     imageScroll->setWidget(this->createImage());
@@ -71,9 +85,9 @@ QScrollArea *pyramid::createScroll()
 // Располагается в layout'е boxLayout.
 QComboBox *pyramid::createFilesBox()
 {
-    filesBox = new QComboBox(centralWidget);
+    filesBox = new QComboBox;
     filesBox->setMinimumWidth(135);
-    connect(filesBox,  static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &pyramid::updateStats);
+    connect(filesBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &pyramid::updateStats);
     return filesBox;
 }
 
@@ -82,7 +96,7 @@ QComboBox *pyramid::createFilesBox()
 // Располагается в layout'е boxLayout.
 QComboBox *pyramid::createLayersBox()
 {
-    layersBox = new QComboBox(centralWidget);
+    layersBox = new QComboBox();
     connect(layersBox,  static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &pyramid::updateLayers);
     return layersBox;
 }
@@ -91,9 +105,9 @@ QComboBox *pyramid::createLayersBox()
 // Входит в состав центрального layout'а.
 QHBoxLayout *pyramid::createBoxLay()
 {
-    fileTip = new QLabel(tr("File:"), centralWidget);
-    layerTip = new QLabel(tr("Layer:"), centralWidget);
-    sizeTip = new QLabel(tr("Size: 0x0"), centralWidget);
+    fileTip = new QLabel(tr("File:"));
+    layerTip = new QLabel(tr("Layer:"));
+    sizeTip = new QLabel(tr("Size: 0x0"));
     boxLayout = new QHBoxLayout;
     boxLayout->addWidget(fileTip);
     boxLayout->addSpacing(-110);
@@ -111,7 +125,7 @@ QHBoxLayout *pyramid::createBoxLay()
 // Располагается в layout'е lowerEnd.
 QPushButton *pyramid::createSpawnerButton()
 {
-    spawnLayers = new QPushButton(tr("Create layers"), centralWidget);
+    spawnLayers = new QPushButton(tr("Create layers"));
     connect(spawnLayers, &QPushButton::clicked, this, &pyramid::startLayersCreation);
     return spawnLayers;
 }
@@ -120,7 +134,7 @@ QPushButton *pyramid::createSpawnerButton()
 // Располагается в layout'е lowerEnd.
 QDoubleSpinBox *pyramid::createMultiplier()
 {
-    multiplier = new QDoubleSpinBox(centralWidget);
+    multiplier = new QDoubleSpinBox;
     multiplier->setValue(2.0);
     multiplier->setSingleStep(0.01);
     multiplier->setMinimum(0.01);
@@ -133,7 +147,7 @@ QDoubleSpinBox *pyramid::createMultiplier()
 // Располагается в layout'е lowerEnd.
 QSpinBox *pyramid::createLayersAmount()
 {
-    layersAmount = new QSpinBox(centralWidget);
+    layersAmount = new QSpinBox;
     layersAmount->setMinimum(1);
     layersAmount->setMaximum(99);
     layersAmount->setValue(3);
@@ -144,7 +158,7 @@ QSpinBox *pyramid::createLayersAmount()
 // Располагается в layout'е lowerEnd.
 QLabel *pyramid::createRecommendTip()
 {
-    recommendTip = new QLabel("Max layers possible: 0", centralWidget);
+    recommendTip = new QLabel("Max layers possible: 0");
     return recommendTip;
 }
 
@@ -152,8 +166,8 @@ QLabel *pyramid::createRecommendTip()
 // Также содержит в себе label подсказывающий максимальное количество создаваемых с текущим коэффициентом слоев.
 QHBoxLayout *pyramid::createLowerEnd()
 {
-    multiplierTip = new QLabel(tr("Multiplier:"), centralWidget);
-    amountTip = new QLabel(tr("Layers:"), centralWidget);
+    multiplierTip = new QLabel(tr("Multiplier:"));
+    amountTip = new QLabel(tr("Layers:"));
     lowerEnd = new QHBoxLayout;
     lowerEnd->addWidget(createRecommendTip());
     lowerEnd->addStretch();
@@ -435,7 +449,7 @@ void pyramid::switchViewMode(bool mode) // СЛОТ |===========================
 bool pyramid::openImage() // СЛОТ |==================================================================|
 {
     const QString openFilePath = QFileDialog::getOpenFileName(nullptr, nullptr, nullptr, tr("Any files (*.*);;Image files (*.jpg *.png)"));
-    if(openFilePath == "") return true; // Пользователь закрыл файловый диалог и не выбрал файл.
+    if(openFilePath == "" || openFilePath == NULL) return true; // Пользователь закрыл файловый диалог и не выбрал файл.
     // Проверка на соответствие формата файла.
     if(!openFilePath.endsWith(".jpg") && !openFilePath.endsWith(".png"))
     {

@@ -9,6 +9,7 @@
 #include <QComboBox>
 #include <QPushButton>
 #include <QSize>
+#include <QCloseEvent>
 #include <QPalette>
 #include <QHBoxLayout>
 #include <QVector>
@@ -22,6 +23,7 @@ class pyramid : public QMainWindow
     Q_OBJECT
 public:  
     explicit pyramid(QWidget *parent = nullptr);
+    ~pyramid();
     // Используется только при консольном вводе.
     // Функция открывает файлы с поступившего в него в качестве аргумента fileList, попутно проверяя пути на валидность.
     // После успешного открытия, создает указанное в amountList количество слоев с множителем в multiplierList в режиме switcher.

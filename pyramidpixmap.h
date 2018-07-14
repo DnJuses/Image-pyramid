@@ -17,6 +17,7 @@ class PyramidPixmap
 public:
     PyramidPixmap(const QString &imagePath);
     PyramidPixmap(const PyramidPixmap &copy);
+    ~PyramidPixmap();
     bool isLoaded() const; // Получение переменной loaded.
     QString getImgSizeTip(size_t i) const; // Получение переменной imageSize, переведенной в QString для более простого использования в QLabel.
     QSize getImgSize() const; // Получение переменной imageSize.
@@ -34,6 +35,7 @@ public:
     // Из минусов можно выделить только более долгое время получения доступа к слою (мгновенно->0.5 сек).
     void createLayers(int amount, double multiplier);
 private:
+    QPixmap *originalImage;
     QVector<Layer> *manipulatingVector; // Указатель на векторы. С его помощью идет манипулирование двумя другими векторами.
     QVector<Layer> imageLayers; // Хранит слои с изображением и его название с размером 1-ого режима отображения.
     QVector<Layer> originalPyramidLayers; // Хранит слои с изображением и его название с размером 2-ого режима отображения.

@@ -1,12 +1,12 @@
 #include "pyramidpixmap.h"
 #include <QtMath>
+#include <QDebug>
 
-PyramidPixmap::PyramidPixmap(const QString &imagePath)
+PyramidPixmap::PyramidPixmap(const QString &imagePath) : path(imagePath)
 {
-    QPixmap *image = new QPixmap;
+    originalImage = new QPixmap;
     loaded = false;
-    path = imagePath;
-    if(image->load(imagePath))
+    if(originalImage->load(imagePath))
     {
         loaded = true;
         /* Инициализация структуры Layer:
@@ -15,17 +15,17 @@ PyramidPixmap::PyramidPixmap(const QString &imagePath)
          * 3. QSizeF - размер слоя в пикселах (1 - Ширина, 2 - Длина).
          * 4. Коэффициент изменения изображения (Первый слой всегда имеет коэф. = 1)
          */
-        originalPyramidLayers.push_back(Layer{image,
+        originalPyramidLayers.push_back(Layer{originalImage,
                                               "Original",
-                                              image->size(),
+                                              originalImage->size(),
                                               1});
-        imageLayers.push_back(Layer{image,
+        imageLayers.push_back(Layer{originalImage,
                                     "Original",
-                                    image->size(),
+                                    originalImage->size(),
                                     1});
         this->setOpVector(0);
         // Находим диагональ изображения по теореме Пифагора.
-        diag = round(sqrt(pow(image->width(), 2) + pow(image->height(), 2)));
+        diag = round(sqrt(pow(originalImage->width(), 2) + pow(originalImage->height(), 2)));
     }
 }
 
@@ -35,6 +35,15 @@ PyramidPixmap::PyramidPixmap(const PyramidPixmap &copy)
     this->diag = copy.diag;
     this->loaded = copy.loaded;
     this->imageLayers = copy.imageLayers;
+    this->originalPyramidLayers = copy.originalPyramidLayers;
+}
+
+PyramidPixmap::~PyramidPixmap()
+{
+    manipulatingVector = nullptr;
+    imageLayers.clear();
+    originalPyramidLayers.clear();
+    delete originalImage;
 }
 
 // Получение переменной loaded.
