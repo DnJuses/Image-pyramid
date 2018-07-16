@@ -13,6 +13,7 @@ pyramid::pyramid(QWidget *parent) : QMainWindow(parent)
 {
     this->setFixedSize(518, 594); // Оптимальный размер основного окна
     this->createAll();
+    generatedImage = nullptr;
     /* Все connect'ы приложения и их расположение (функция:строка):
      * connect(filesBox,  static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &pyramid::updateStats); (createFilesBox:76)
      * connect(layersBox,  static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &pyramid::updateLayers); (createLayersBox:86)
@@ -35,6 +36,9 @@ pyramid::~pyramid()
     {
         delete *i;
     }
+    openedImages.clear(); openedImages.resize(0);
+    if(generatedImage != nullptr) delete generatedImage;
+    delete img;
     this->deleteLater();
 }
 
@@ -63,7 +67,7 @@ QVBoxLayout *pyramid::createCLayout()
 QWidget *pyramid::createImage()
 {
     imageWdg = new QWidget;
-    img = new QPalette;
+    img = new QPalette();
     imageWdg->setAutoFillBackground(true);
     return imageWdg;
 }
@@ -72,7 +76,7 @@ QWidget *pyramid::createImage()
 // Прокручивает imageWdg.
 QScrollArea *pyramid::createScroll()
 {
-    QScrollArea *imageScroll = new QScrollArea;
+    imageScroll = new QScrollArea;
     imageScroll->setFixedSize(500, 500);
     imageScroll->setAlignment(Qt::AlignCenter);
     imageScroll->setWidget(this->createImage());
@@ -96,8 +100,8 @@ QComboBox *pyramid::createFilesBox()
 // Располагается в layout'е boxLayout.
 QComboBox *pyramid::createLayersBox()
 {
-    layersBox = new QComboBox();
-    connect(layersBox,  static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &pyramid::updateLayers);
+    layersBox = new QComboBox;
+    connect(layersBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &pyramid::updateLayers);
     return layersBox;
 }
 
@@ -448,8 +452,8 @@ void pyramid::switchViewMode(bool mode) // СЛОТ |===========================
 // В случае неудачи - оповещает пользователя о невозможности открытия файла.
 bool pyramid::openImage() // СЛОТ |==================================================================|
 {
-    const QString openFilePath = QFileDialog::getOpenFileName(nullptr, nullptr, nullptr, tr("Any files (*.*);;Image files (*.jpg *.png)"));
-    if(openFilePath == "" || openFilePath == NULL) return true; // Пользователь закрыл файловый диалог и не выбрал файл.
+    const QString openFilePath = QFileDialog::getOpenFileName(this, nullptr, nullptr, tr("Any files (*.*);;Image files (*.jpg *.png)"));
+    if(openFilePath == "" || openFilePath == nullptr) return true; // Пользователь закрыл файловый диалог и не выбрал файл.
     // Проверка на соответствие формата файла.
     if(!openFilePath.endsWith(".jpg") && !openFilePath.endsWith(".png"))
     {
@@ -511,7 +515,6 @@ void pyramid::updateStats(size_t id) // СЛОТ |==============================
 // Слот обновляет imageWdg и sizeTip после смены слоя.
 void pyramid::updateLayers(size_t id) // СЛОТ |==================================================================|
 {
-    static QPixmap *generatedImage;
     if(generatedImage != nullptr) delete generatedImage;
     generatedImage = new QPixmap(*(openedImages[filesBox->currentIndex()]->getImage(0)));
     this->transformByMode(switchMode->isChecked(), generatedImage, id);

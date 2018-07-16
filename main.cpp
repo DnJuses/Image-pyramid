@@ -62,10 +62,10 @@ int main(int argc, char *argv[])
         j = 1;
     }
     QApplication a(argc, argv);
+    QCommandLineParser parser;
     pyramid w;
     w.setWindowTitle("Image pyramid");
     w.show();
-    QCommandLineParser parser;
     parser.setApplicationDescription("Image pyramid");
     parser.addHelpOption();
     parser.addVersionOption();

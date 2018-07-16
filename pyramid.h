@@ -31,6 +31,7 @@ public:
 private:
 
     QVector<PyramidPixmap*> openedImages;
+    QPixmap *generatedImage;
     QWidget *centralWidget;                 QWidget* createCentral();
     QVBoxLayout *centralLayout;             QVBoxLayout* createCLayout();
     QWidget *imageWdg; QPalette *img;       QWidget* createImage();
