@@ -195,7 +195,7 @@ void pyramid::createMenu()
     connect(openFile, &QAction::triggered, this, &pyramid::openImage);
     fileMenu->addAction(openFile);
     QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
-    switchMode = new QAction(tr("&Switch view mode"));
+    switchMode = new QAction(tr("&Switch view mode"), this);
     switchMode->setCheckable(true);
     switchMode->setChecked(0);
     connect(switchMode, &QAction::triggered, this, &pyramid::switchViewMode);
